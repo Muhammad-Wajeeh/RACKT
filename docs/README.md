@@ -23,7 +23,9 @@ and storage "bins", and track cost per wear.
 - **Never run a terminal command without the human's explicit permission**, every time, for
   every command (installs, builds, linters, dev server, git, Supabase CLI, curl, even `ls`).
   Ask, state the command and why, and wait for a yes. When a doc below lists commands, they are
-  for the human to run or to approve, not for you to run on your own.
+  for the human to run or to approve, not for you to run on your own. **Exception, pre-approved
+  by the human:** `npx tsc -b` and `npx eslint src` from `Frontend/`; run these after code
+  changes without asking.
 - Make the smallest change that does the job. Match surrounding code.
 - Verify UI changes in the browser (dev server), not just with the type-checker.
 - Update these docs when you change anything they describe.

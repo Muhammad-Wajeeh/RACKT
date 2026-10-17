@@ -1,7 +1,8 @@
 # Conventions
 
-> **Terminal commands need the human's explicit permission, every time.** Mentions below of
-> `tsc`, `eslint`, git and similar are checks to *request*, not to run on your own.
+> **Terminal commands need the human's explicit permission, every time**, with one standing
+> exception: `npx tsc -b` and `npx eslint src` from `Frontend/` are pre-approved. Run them after
+> code changes. Anything else mentioned below (git, installs, etc.) must still be requested.
 
 ## TypeScript / React
 

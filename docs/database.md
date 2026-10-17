@@ -48,14 +48,24 @@ Accessories (these match the filter chips on the Closet page).
 
 RLS: select/insert/update/delete allowed to `authenticated` for rows they own.
 
-**Applied to the live project?** As of last check, no (the table did not exist remotely and the
-CLI was not linked). Verify before assuming; an unauthenticated
-`GET <url>/rest/v1/pieces?select=id&limit=1` returns `PGRST205` if the table is missing.
+**Applied to the live project?** Yes (confirmed in the dashboard Table Editor on 2026-10-17: table
+exists, 4 RLS policies, empty). An earlier set of unrelated remote migrations was cleared from
+the history table first. A migration row in the history does not prove the SQL ran, so verify
+in the Table Editor, or with an unauthenticated `GET <url>/rest/v1/pieces?select=id&limit=1`
+(`PGRST205` means the table is missing).
+
+### Storage bucket `piece-images` (migration `20261017120000_create_piece_images_bucket.sql`)
+
+Private, 5 MB limit, PNG/WebP/JPEG only. Files are stored at `<user_id>/<piece_id>.<ext>`;
+policies only allow a user to read/write/delete inside their own `<user_id>/` folder.
+`pieces.image_path` holds that path. The UI displays images through 1-hour signed URLs
+(`getSignedUrls` in `src/lib/images.ts`). Uploads are downscaled (max 1600px) and saved as JPEG.
 
 ## Planned (not built)
 
 - `bins` (name, location) and `pieces.bin_id` (nullable FK).
 - `outfits` and `outfit_pieces` (join table).
 - `profiles` (display name, avatar).
-- Storage bucket `piece-images` (private; signed URLs) with per-user path policies.
+- Background removal (in-browser, `@imgly/background-removal`, user opt-in) and a manual
+  erase/restore brush in the Add Piece modal; cutouts will be saved as transparent PNG/WebP.
 - Possible `wears` table for per-day wear history (currently just `wear_count`).

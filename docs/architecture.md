@@ -40,6 +40,7 @@ CSS (one `.css` file next to each component). MUI/Emotion are not used in the ap
 | `/login`, `/signup` | `AuthPage` (`mode` prop) | guests only (`GuestOnly`; signed-in users go to `/closet`) |
 | `/` | redirect to `/closet` | signed in |
 | `/closet` | `ClosetPage` | signed in |
+| `/closet/:id` | `PieceDetailPage` (read-only preview; edit/log wear/bin/delete buttons are not wired yet) | signed in |
 | `/outfits` | `OutfitsPage` | signed in |
 | `/bins` | `BinsPage` | signed in |
 | `/profile` | `ProfilePage` | signed in |
@@ -57,6 +58,17 @@ Signed-in routes sit inside `RequireAuth` (redirects to `/login`) and `AppLayout
 - Sign out: `supabase.auth.signOut()` on the Profile page.
 - Supabase has email confirmation on (`mailer_autoconfirm: false`), so signup may show
   "Check your email" instead of signing the user in.
+
+## Background removal
+
+`cutOutBackground()` in `src/lib/images.ts` runs `@imgly/background-removal` in the browser
+(lazy-loaded; the model downloads on first use from IMG.LY's CDN) and returns a transparent PNG.
+It is opt-in per photo in the Add Piece modal. `preloadCutoutModel()` starts the model
+download (when the browser is idle) as soon as the modal opens; a cutout requested before it
+finishes just waits for it and shows the loading state. `preload()` and `removeBackground()` must
+share the same config (`CUTOUT_CONFIG`). **That package is AGPL-licensed**: fine while this
+is a personal project, but before any commercial release either buy an IMG.LY license or swap
+this one function for a server-side API (e.g. a Supabase Edge Function calling a paid service).
 
 ## Environment variables (Frontend/.env.local)
 

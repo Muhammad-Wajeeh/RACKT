@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc -b)",
+      "Bash(npx eslint src)",
+      "PowerShell(npx tsc -b)",
+      "PowerShell(npx eslint src)"
+    ]
+  }
+}
