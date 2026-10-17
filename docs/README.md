@@ -1,0 +1,29 @@
+# RACKT docs (read me first)
+
+RACKT is a closet-tracking app: catalogue clothing "pieces", group them into outfits ("looks")
+and storage "bins", and track cost per wear.
+
+| Doc | What's in it |
+|---|---|
+| [architecture.md](architecture.md) | Repo layout, stack, routes, auth flow |
+| [conventions.md](conventions.md) | Code style, file organisation, how to add a page or component |
+| [design-system.md](design-system.md) | Colours, type, shared CSS classes, visual rules |
+| [database.md](database.md) | Supabase schema, RLS, migration workflow |
+| [gotchas.md](gotchas.md) | Things that have bitten us; read before debugging |
+
+## Current status
+
+- Built (UI mockups, mostly hard-coded data): Closet, Outfits, Bins, Profile, Login/Signup pages.
+- Wired to Supabase: authentication only (email/password; Google button is coded but the provider is not enabled yet).
+- Database: `pieces` migration written; check `docs/database.md` for whether it has been applied.
+- Not started: reading/writing real data on pages, image upload, bins and outfits tables, forgot-password flow.
+
+## Working agreement
+
+- **Never run a terminal command without the human's explicit permission**, every time, for
+  every command (installs, builds, linters, dev server, git, Supabase CLI, curl, even `ls`).
+  Ask, state the command and why, and wait for a yes. When a doc below lists commands, they are
+  for the human to run or to approve, not for you to run on your own.
+- Make the smallest change that does the job. Match surrounding code.
+- Verify UI changes in the browser (dev server), not just with the type-checker.
+- Update these docs when you change anything they describe.
