@@ -1,39 +1,18 @@
+import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import AddPieceModal from '../components/AddPieceModal'
 import PageHeader from '../components/PageHeader'
+import { getSignedUrls } from '../lib/images'
+import { CATEGORIES, fetchPieces, type Piece } from '../lib/pieces'
 import './ClosetPage.css'
 
-const FILTERS = [
-  'All',
-  'Clothing',
-  'Tops',
-  'Bottoms',
-  'Footwear',
-  'Jewelry',
-  'Headwear',
-  'Accessories',
-]
+const FILTERS = ['All', ...CATEGORIES]
 
-interface Piece {
-  category: string
-  name: string
-  brand: string
-  perWear: string
-  binned?: boolean
+function priceLabel(p: Piece) {
+  if (p.cost_per_wear != null) return `$${p.cost_per_wear.toFixed(2)} / wear`
+  if (p.price != null) return `$${p.price.toFixed(2)}`
+  return ''
 }
-
-const PIECES: Piece[] = [
-  { category: 'Clothing', name: 'Ribbed Turtleneck', brand: 'Isadora Studio', perWear: '$4.86' },
-  { category: 'Clothing', name: 'Oxford Poplin Shirt', brand: 'Fielding & Rose', perWear: '$4.38' },
-  { category: 'Clothing', name: 'Silk Camisole', brand: 'Lune', perWear: '$6.00' },
-  { category: 'Clothing', name: 'Wide-Leg Trouser', brand: 'Fielding & Rose', perWear: '$7.11' },
-  { category: 'Clothing', name: 'Raw Denim', brand: 'Atelier Noir', perWear: '$4.83' },
-  { category: 'Clothing', name: 'Pleated Midi Skirt', brand: 'Lune', perWear: '$14.00' },
-  { category: 'Clothing', name: 'Wool Overcoat', brand: 'Atelier Noir', perWear: '$15.45', binned: true },
-  { category: 'Clothing', name: 'Waxed Field Jacket', brand: 'Fielding & Rose', perWear: '$14.00' },
-  { category: 'Shoes', name: 'Leather Loafer', brand: 'Atelier Noir', perWear: '$9.20', binned: true },
-  { category: 'Shoes', name: 'Canvas Sneaker', brand: 'Lune', perWear: '$3.10' },
-  { category: 'Shoes', name: 'Chelsea Boot', brand: 'Fielding & Rose', perWear: '$11.75' },
-  { category: 'Jewelry', name: 'Signet Ring', brand: 'Isadora Studio', perWear: '$2.40' },
-]
 
 const iconProps = {
   width: 18,
@@ -58,6 +37,32 @@ function ImageIcon({ size = 26 }: { size?: number }) {
 }
 
 export default function ClosetPage() {
+  const [pieces, setPieces] = useState<Piece[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [adding, setAdding] = useState(false)
+  const [urls, setUrls] = useState<Record<string, string>>({})
+  const requested = useRef(new Set<string>())
+
+  useEffect(() => {
+    fetchPieces()
+      .then(setPieces)
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [])
+
+  // Fetch signed URLs for any photos we haven't requested yet.
+  useEffect(() => {
+    const missing = pieces
+      .map((p) => p.image_path)
+      .filter((path): path is string => !!path && !requested.current.has(path))
+    if (missing.length === 0) return
+    missing.forEach((path) => requested.current.add(path))
+    getSignedUrls(missing)
+      .then((map) => setUrls((prev) => ({ ...prev, ...map })))
+      .catch(() => missing.forEach((path) => requested.current.delete(path)))
+  }, [pieces])
+
   return (
     <>
       <PageHeader eyebrow="Catalogue" title="The Closet">
@@ -83,7 +88,7 @@ export default function ClosetPage() {
             </svg>
             SELECT
           </button>
-          <button type="button" className="btn btn--primary">
+          <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
             <svg {...iconProps}>
               <path d="M12 5v14M5 12h14" />
             </svg>
@@ -106,33 +111,34 @@ export default function ClosetPage() {
             ))}
           </div>
 
+          {error && <p className="closet-status closet-status--error">{error}</p>}
+          {loading && <p className="closet-status">Loading your closet…</p>}
+          {!loading && !error && pieces.length === 0 && (
+            <p className="closet-status">Nothing here yet. Add your first piece.</p>
+          )}
+
           <div className="closet-grid">
-            {PIECES.map((p) => (
-              <article key={p.name} className="piece">
+            {pieces.map((p) => (
+              <Link key={p.id} to={`/closet/${p.id}`} className="piece">
                 <div className="piece__image">
-                  {p.binned && (
-                    <span className="piece__badge" title="In a bin">
-                      <svg {...iconProps} width={12} height={12}>
-                        <rect x="3" y="4" width="18" height="4" rx="1" />
-                        <path d="M4.5 8v11a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1V8M10 12.5h4" />
-                      </svg>
-                    </span>
+                  {p.image_path && urls[p.image_path] ? (
+                    <img className="piece__photo" src={urls[p.image_path]} alt={p.name} />
+                  ) : (
+                    <>
+                      <ImageIcon />
+                      <span className="piece__drop">{p.category}</span>
+                    </>
                   )}
-                  <ImageIcon />
-                  <span className="piece__drop">{p.category}</span>
-                  <span className="piece__browse">
-                    or <u>browse files</u>
-                  </span>
                 </div>
                 <div className="piece__info">
                   <span className="piece__category">{p.category}</span>
                   <h3>{p.name}</h3>
                   <div className="piece__meta">
                     <span>{p.brand}</span>
-                    <span>{p.perWear} / wear</span>
+                    <span>{priceLabel(p)}</span>
                   </div>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         </section>
@@ -145,6 +151,13 @@ export default function ClosetPage() {
           <p>Select a piece to see details.</p>
         </aside>
       </div>
+
+      {adding && (
+        <AddPieceModal
+          onClose={() => setAdding(false)}
+          onCreated={(piece) => setPieces((prev) => [piece, ...prev])}
+        />
+      )}
     </>
   )
 }
