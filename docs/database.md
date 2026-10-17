@@ -41,6 +41,11 @@ Closet items. Columns: `id`, `user_id`, `name`, `brand`, `category`, `price`, `w
 `image_path`, `created_at`, `updated_at`, `cost_per_wear` (generated: price / wear_count,
 null until worn).
 
+`color_hex` / `color_name` (migration `20261018000000_add_piece_color.sql`): the auto-detected
+main colour. **Only set when the piece was saved with a background-removed photo**; measured
+on the cutout's opaque pixels with Color Thief (`src/lib/colors.ts`), then snapped to a small
+clothing-friendly name list in CIELAB. There is no manual colour choice yet.
+
 `category` is constrained to: Clothing, Tops, Bottoms, Footwear, Jewelry, Headwear,
 Accessories (these match the filter chips on the Closet page).
 

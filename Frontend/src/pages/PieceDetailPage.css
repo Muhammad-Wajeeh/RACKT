@@ -124,6 +124,19 @@
   text-align: right;
 }
 
+.detail__color {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail__color i {
+  width: 14px;
+  height: 14px;
+  border: 1px solid #8f8f8f;
+  border-radius: 50%;
+}
+
 .detail__buttons {
   display: flex;
   flex-wrap: wrap;

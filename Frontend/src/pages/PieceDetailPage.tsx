@@ -134,6 +134,19 @@ export default function PieceDetailPage() {
                   <dd>{load.piece.category}</dd>
                 </div>
                 <div>
+                  <dt>Color</dt>
+                  <dd>
+                    {load.piece.color_hex ? (
+                      <span className="detail__color">
+                        <i style={{ background: load.piece.color_hex }} aria-hidden="true" />
+                        {load.piece.color_name}
+                      </span>
+                    ) : (
+                      '—'
+                    )}
+                  </dd>
+                </div>
+                <div>
                   <dt>Added</dt>
                   <dd>{date(load.piece.created_at)}</dd>
                 </div>

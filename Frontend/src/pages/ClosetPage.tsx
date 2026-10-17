@@ -131,7 +131,16 @@ export default function ClosetPage() {
                   )}
                 </div>
                 <div className="piece__info">
-                  <span className="piece__category">{p.category}</span>
+                  <span className="piece__category">
+                    {p.category}
+                    {p.color_hex && (
+                      <i
+                        className="swatch"
+                        style={{ background: p.color_hex }}
+                        title={p.color_name ?? undefined}
+                      />
+                    )}
+                  </span>
                   <h3>{p.name}</h3>
                   <div className="piece__meta">
                     <span>{p.brand}</span>

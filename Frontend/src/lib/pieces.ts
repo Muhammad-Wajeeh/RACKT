@@ -21,6 +21,8 @@ export interface Piece {
   wear_count: number
   image_path: string | null
   cost_per_wear: number | null
+  color_hex: string | null
+  color_name: string | null
   created_at: string
   updated_at: string
 }
@@ -28,6 +30,8 @@ export interface Piece {
 export interface NewPiece {
   id: string
   image_path: string | null
+  color_hex: string | null
+  color_name: string | null
   name: string
   brand: string | null
   category: Category

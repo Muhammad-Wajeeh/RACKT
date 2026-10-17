@@ -144,6 +144,16 @@
   color: var(--accent);
 }
 
+.swatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-left: 8px;
+  border: 1px solid #8f8f8f;
+  border-radius: 50%;
+  vertical-align: -1px;
+}
+
 .piece h3 {
   margin: 4px 0 8px;
   font-size: 13px;

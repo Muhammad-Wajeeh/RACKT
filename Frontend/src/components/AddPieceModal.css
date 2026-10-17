@@ -144,6 +144,26 @@
   font-size: 11px;
 }
 
+.modal__color {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -4px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.modal__color i {
+  width: 14px;
+  height: 14px;
+  border: 1px solid #8f8f8f;
+  border-radius: 50%;
+}
+
+.modal__color strong {
+  color: var(--ink);
+}
+
 .modal__field {
   display: flex;
   flex: 1;

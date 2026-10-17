@@ -8,6 +8,7 @@ import {
   uploadPieceImage,
   type PreparedImage,
 } from '../lib/images'
+import { detectColor, type DetectedColor } from '../lib/colors'
 import { CATEGORIES, createPiece, type Category, type Piece } from '../lib/pieces'
 import './AddPieceModal.css'
 
@@ -32,6 +33,7 @@ export default function AddPieceModal({ onClose, onCreated }: AddPieceModalProps
   const [original, setOriginal] = useState<Photo | null>(null)
   const [cutout, setCutout] = useState<Photo | null>(null)
   const [useCutout, setUseCutout] = useState(false)
+  const [color, setColor] = useState<DetectedColor | null>(null)
   const [cutStatus, setCutStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -69,6 +71,7 @@ export default function AddPieceModal({ onClose, onCreated }: AddPieceModalProps
       setOriginal(toPhoto(image))
       setCutout(null)
       setUseCutout(false)
+      setColor(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load that image.')
     }
@@ -78,6 +81,7 @@ export default function AddPieceModal({ onClose, onCreated }: AddPieceModalProps
     setOriginal(null)
     setCutout(null)
     setUseCutout(false)
+    setColor(null)
   }
 
   async function handleCutout() {
@@ -88,6 +92,8 @@ export default function AddPieceModal({ onClose, onCreated }: AddPieceModalProps
       const image = await cutOutBackground(original.image, setCutStatus)
       setCutout(toPhoto(image))
       setUseCutout(true)
+      // Colour detection is best-effort; a failure just means no colour is saved.
+      setColor(await detectColor(image.blob).catch(() => null))
     } catch (err) {
       setError(
         err instanceof Error ? `Background removal failed: ${err.message}` : 'Background removal failed.',
@@ -115,9 +121,13 @@ export default function AddPieceModal({ onClose, onCreated }: AddPieceModalProps
     let imagePath: string | null = null
     try {
       if (shown) imagePath = await uploadPieceImage(user.id, id, shown.image)
+      // Only cutouts get an auto-detected colour.
+      const savedColor = useCutout && cutout ? color : null
       const piece = await createPiece({
         id,
         image_path: imagePath,
+        color_hex: savedColor?.hex ?? null,
+        color_name: savedColor?.name ?? null,
         name,
         brand: brand || null,
         category: form.get('category') as Category,
@@ -222,6 +232,13 @@ export default function AddPieceModal({ onClose, onCreated }: AddPieceModalProps
             </button>
           )}
         </div>
+
+        {useCutout && cutout && color && (
+          <p className="modal__color">
+            <i style={{ background: color.hex }} aria-hidden="true" />
+            Detected color: <strong>{color.name}</strong>
+          </p>
+        )}
 
         <label className="modal__field">
           <span>Name</span>
