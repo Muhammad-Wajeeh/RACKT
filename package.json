@@ -1,0 +1,12 @@
+{
+  "name": "rackt",
+  "private": true,
+  "scripts": {
+    "db:link": "supabase link --project-ref cxyprhcjhoxtrrbsosus",
+    "db:push": "supabase db push",
+    "db:new": "supabase migration new"
+  },
+  "devDependencies": {
+    "supabase": "^2.121.0"
+  }
+}
