@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import { NavLink } from 'react-router-dom'
 import './Sidebar.css'
 
-export type SidebarKey = 'closet' | 'outfits' | 'bins' | 'profile'
+type SidebarKey = 'closet' | 'outfits' | 'bins' | 'profile'
 
 interface NavItem {
   key: SidebarKey
@@ -67,7 +68,6 @@ const NAV_ITEMS: NavItem[] = [
 ]
 
 export default function Sidebar() {
-  const [active, setActive] = useState<SidebarKey>('closet')
   const itemCount = 20
 
   return (
@@ -78,16 +78,16 @@ export default function Sidebar() {
 
       <nav className="sidebar__nav" aria-label="Main">
         {NAV_ITEMS.map(({ key, label, icon }) => (
-          <button
+          <NavLink
             key={key}
-            type="button"
-            className={`sidebar__item${active === key ? ' sidebar__item--active' : ''}`}
-            aria-current={active === key ? 'page' : undefined}
-            onClick={() => setActive(key)}
+            to={`/${key}`}
+            className={({ isActive }) =>
+              `sidebar__item${isActive ? ' sidebar__item--active' : ''}`
+            }
           >
             {icon}
             <span>{label}</span>
-          </button>
+          </NavLink>
         ))}
       </nav>
 

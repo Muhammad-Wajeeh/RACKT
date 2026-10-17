@@ -1,0 +1,35 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 70px;
+  flex-shrink: 0;
+  padding: 0 28px;
+  border-bottom: 2px solid #9a9a9a;
+}
+
+.page-header__title {
+  display: flex;
+  flex-direction: column;
+}
+
+.page-header__eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.page-placeholder {
+  padding: 28px;
+  color: var(--muted);
+}
