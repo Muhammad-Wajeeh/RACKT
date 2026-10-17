@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
+import { useAuth } from '../auth/AuthContext'
 import PageHeader from '../components/PageHeader'
+import { supabase } from '../lib/supabase'
 import './ProfilePage.css'
 
 const iconProps = {
@@ -63,6 +65,10 @@ const ROWS: Row[] = [
 ]
 
 export default function ProfilePage() {
+  const { user } = useAuth()
+  const meta = user?.user_metadata
+  const name = meta?.display_name ?? meta?.full_name ?? meta?.name ?? 'Your name'
+
   return (
     <>
       <PageHeader eyebrow="Member since 2024" title="Profile">
@@ -82,8 +88,8 @@ export default function ProfilePage() {
               </small>
             </div>
             <div>
-              <h2>Jane Doe</h2>
-              <p>jane@email.com</p>
+              <h2>{name}</h2>
+              <p>{user?.email}</p>
             </div>
           </div>
 
@@ -111,7 +117,11 @@ export default function ProfilePage() {
             ))}
           </ul>
 
-          <button type="button" className="btn profile__signout">
+          <button
+            type="button"
+            className="btn profile__signout"
+            onClick={() => supabase.auth.signOut()}
+          >
             <svg {...iconProps}>
               <path d="M10 4H6a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M14 8l4 4-4 4M18 12H9" />
             </svg>
