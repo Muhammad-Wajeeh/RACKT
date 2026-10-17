@@ -8,4 +8,9 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  // This package is only imported lazily, so Vite would otherwise discover it mid-session
+  // and force a full page reload. Pre-bundle it at startup instead.
+  optimizeDeps: {
+    include: ['@imgly/background-removal'],
+  },
 })
