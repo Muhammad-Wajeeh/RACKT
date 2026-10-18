@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import VisibilityOffOutlined from '@mui/icons-material/VisibilityOffOutlined'
+import VisibilityOutlined from '@mui/icons-material/VisibilityOutlined'
 import { supabase } from '../lib/supabase'
 import './AuthPage.css'
 
@@ -23,6 +25,50 @@ const COPY = {
     switchTo: '/login',
   },
 } as const
+
+/** A password box with an eye button that reveals or hides what's typed. */
+function PasswordField({
+  label,
+  name,
+  autoComplete,
+}: {
+  label: string
+  name: string
+  autoComplete: string
+}) {
+  const [visible, setVisible] = useState(false)
+
+  return (
+    <label className="field">
+      <span>{label}</span>
+      <div className="field__control">
+        <input
+          type={visible ? 'text' : 'password'}
+          name={name}
+          required
+          autoComplete={autoComplete}
+          placeholder="••••••••"
+        />
+        <button
+          type="button"
+          className="field__toggle"
+          aria-label={visible ? 'Hide password' : 'Show password'}
+          aria-pressed={visible}
+          title={visible ? 'Hide password' : 'Show password'}
+          // Keep the cursor in the box when the eye is clicked.
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => setVisible((v) => !v)}
+        >
+          {visible ? (
+            <VisibilityOffOutlined sx={{ fontSize: 18 }} />
+          ) : (
+            <VisibilityOutlined sx={{ fontSize: 18 }} />
+          )}
+        </button>
+      </div>
+    </label>
+  )
+}
 
 export default function AuthPage({ mode }: { mode: Mode }) {
   const copy = COPY[mode]
@@ -116,28 +162,14 @@ export default function AuthPage({ mode }: { mode: Mode }) {
             <input type="email" name="email" required autoComplete="email" placeholder="jane@email.com" />
           </label>
 
-          <label className="field">
-            <span>Password</span>
-            <input
-              type="password"
-              name="password"
-              required
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              placeholder="••••••••"
-            />
-          </label>
+          <PasswordField
+            label="Password"
+            name="password"
+            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+          />
 
           {mode === 'signup' && (
-            <label className="field">
-              <span>Confirm password</span>
-              <input
-                type="password"
-                name="confirm"
-                required
-                autoComplete="new-password"
-                placeholder="••••••••"
-              />
-            </label>
+            <PasswordField label="Confirm password" name="confirm" autoComplete="new-password" />
           )}
 
           {mode === 'login' && (
