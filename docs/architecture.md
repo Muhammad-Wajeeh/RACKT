@@ -31,7 +31,9 @@ is what protects data, so every table must have RLS enabled.
 ## Stack
 
 Vite 8, React 19, TypeScript, `react-router-dom` 7, `@supabase/supabase-js`. Styling is plain
-CSS (one `.css` file next to each component). MUI/Emotion are not used in the app.
+CSS (one `.css` file next to each component). MUI is used **only for icons**
+(`@mui/icons-material`, which needs `@mui/material` and Emotion as peer dependencies); no MUI
+components are used.
 
 ## Routes (`src/App.tsx`)
 
@@ -39,14 +41,23 @@ CSS (one `.css` file next to each component). MUI/Emotion are not used in the ap
 |---|---|---|
 | `/login`, `/signup` | `AuthPage` (`mode` prop) | guests only (`GuestOnly`; signed-in users go to `/closet`) |
 | `/` | redirect to `/closet` | signed in |
-| `/closet` | `ClosetPage` | signed in |
-| `/closet/:id` | `PieceDetailPage` (read-only preview; edit/log wear/bin/delete buttons are not wired yet) | signed in |
-| `/outfits` | `OutfitsPage` | signed in |
+| `/closet` | `ClosetPage`. Clicking a card selects it and shows `PieceDetails` in the right-hand panel (Delete works, with a confirm dialog; LOG A WEAR works and adds 1 to `wear_count`, a plain counter with no history; EDIT PIECE works for name, brand, category, price and wear count, but not the photo or colour; MOVE TO BIN works (single piece, or in bulk via the SELECT mode). The add and edit modals share `PieceFields` and `parsePieceForm`.). Selection is local state, not a route. The search box, category chips and the top-right Sort & filter panel (`SortFilterMenu`; logic in `src/lib/closetView.ts`) all work client-side on the loaded pieces: search matches name, brand, category path and colour name (every typed word must match); the panel sorts (newest/oldest, price, colour lightness, wear count, cost per wear; pieces missing the value sort last) and filters by colour, price range, times worn and brand (AND across groups, OR within colours and within brands). | signed in |
+| `/categories` | `CategoriesPage`: add / rename / delete types and subtypes (max 3 levels) | signed in |
+| `/profile` | `ProfilePage`: "Member since" from the account's real creation date (`user.created_at`), name and picture (stored in the auth user's metadata: `display_name`, `avatar_path` in the `piece-images` bucket; Google sign-ins also supply `avatar_url`), live stats (pieces, looks, average cost per wear = total spent on worn priced pieces / total wears), Edit profile, Export closet as CSV, Sign out | signed in |
+| `/bins` | `BinsPage`: bins (name, notes, optional photo) with a details panel to add pieces, take them out, edit and delete; a piece is in at most one bin | signed in |
+| `/outfits` | `OutfitsPage`: grid of saved looks (pieces stacked top to bottom via `OutfitCollage`, or the cover photo), tag filter | signed in |
+| `/outfits/new`, `/outfits/:id` | `OutfitBuilderPage`: an outfit is a vertical stack of **slots** (add / remove / drag or arrow-reorder, each holds one piece, empty slots are dropped on save); click a slot, then pick a piece from your closet on the left. Also name / tags / notes / optional cover photo; for a saved look also WEAR THIS OUTFIT (adds one wear to every piece via the `wear_outfit` RPC) and DELETE | signed in |
 | `/bins` | `BinsPage` | signed in |
 | `/profile` | `ProfilePage` | signed in |
 | anything else | redirect to `/closet` | signed in |
 
 Signed-in routes sit inside `RequireAuth` (redirects to `/login`) and `AppLayout`.
+
+## Sidebar item count
+
+The "No. N items catalogued" footer reads `useClosetCount()` (`src/layouts/ClosetCount.tsx`). The
+provider (inside `AppLayout`) fetches a cheap count once, and the Closet page updates it whenever
+its pieces list changes, so adds and deletes show up immediately.
 
 ## Auth flow
 

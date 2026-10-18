@@ -57,6 +57,16 @@ const NAMED_LAB = Object.entries(NAMED_COLORS).map(
   ([name, hex]) => [name, hexToLab(hex)] as const,
 )
 
+/** A reference hex for a colour name from our list, for drawing swatches. */
+export function swatchFor(name: string): string | undefined {
+  return NAMED_COLORS[name]
+}
+
+/** Perceptual lightness (CIELAB L*): 0 = black, 100 = white. */
+export function colorLightness(hex: string): number {
+  return hexToLab(hex)[0]
+}
+
 export function nameColor(hex: string): string {
   const lab = hexToLab(hex)
   let best = NAMED_LAB[0]![0]

@@ -33,7 +33,7 @@ Font is **Archivo** (loaded from Google Fonts in `index.html`), weights 400–80
 
 ## Shared pieces
 
-- **Shell:** `AppLayout` = fixed 231px `Sidebar` (logo, 4 nav links, item-count footer) + main column.
+- **Shell:** `AppLayout` = fixed 231px `Sidebar` (logo, 5 nav links, item-count footer) + main column.
 - **`PageHeader`:** 70px bar, eyebrow + title on the left, actions on the right (use `margin-left: auto`
   on the first action).
 - **Buttons:** `.btn` (outlined), `.btn--primary` (solid red), `.btn--icon` (square icon-only).
@@ -42,7 +42,11 @@ Font is **Archivo** (loaded from Google Fonts in `index.html`), weights 400–80
   hidden below 1100px wide.
 - **Empty states:** a 32px outline icon above one line of muted text.
 - **Chips:** 25px tall, 1px red border, red text; the active chip is white with dark text.
-- **Icons:** inline SVG, stroke `currentColor`, 1.5–1.8 stroke width, round caps and joins.
+- **Icons:** Material **Outlined** icons from `@mui/icons-material` (the mockups use the Outlined
+  set). Import each icon from its own path (`@mui/icons-material/CheckroomOutlined`), never from
+  the package root. Size with `sx={{ fontSize: N }}` (16–18 in buttons, 20 in the sidebar,
+  26–32 for empty states). They inherit the text color. The one exception is the multicolor
+  Google logo in `AuthPage`, which is inline SVG.
 
 ## Mockups
 

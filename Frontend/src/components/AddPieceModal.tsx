@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import ImageOutlined from '@mui/icons-material/ImageOutlined'
 import { useAuth } from '../auth/AuthContext'
 import {
   cutOutBackground,
@@ -8,11 +9,14 @@ import {
   uploadPieceImage,
   type PreparedImage,
 } from '../lib/images'
+import type { Category } from '../lib/categories'
 import { detectColor, type DetectedColor } from '../lib/colors'
-import { CATEGORIES, createPiece, type Category, type Piece } from '../lib/pieces'
+import { createPiece, parsePieceForm, type Piece } from '../lib/pieces'
+import PieceFields from './PieceFields'
 import './AddPieceModal.css'
 
 interface AddPieceModalProps {
+  categories: Category[]
   onClose: () => void
   onCreated: (piece: Piece) => void
 }
@@ -26,7 +30,7 @@ function toPhoto(image: PreparedImage): Photo {
   return { image, previewUrl: URL.createObjectURL(image.blob) }
 }
 
-export default function AddPieceModal({ onClose, onCreated }: AddPieceModalProps) {
+export default function AddPieceModal({ categories, onClose, onCreated }: AddPieceModalProps) {
   const { user } = useAuth()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -40,6 +44,8 @@ export default function AddPieceModal({ onClose, onCreated }: AddPieceModalProps
 
   useEffect(() => {
     dialogRef.current?.showModal()
+    // showModal() ignores React's autoFocus, so focus the first field ourselves.
+    dialogRef.current?.querySelector<HTMLElement>('[data-autofocus]')?.focus()
     preloadCutoutModel()
   }, [])
 
@@ -107,13 +113,12 @@ export default function AddPieceModal({ onClose, onCreated }: AddPieceModalProps
     e.preventDefault()
     setError(null)
 
-    const form = new FormData(e.currentTarget)
-    const name = String(form.get('name') ?? '').trim()
-    const brand = String(form.get('brand') ?? '').trim()
-    const price = String(form.get('price') ?? '').trim()
-    const wears = String(form.get('wear_count') ?? '').trim()
-
-    if (!name) return setError('Name is required.')
+    let values
+    try {
+      values = parsePieceForm(new FormData(e.currentTarget))
+    } catch (err) {
+      return setError(err instanceof Error ? err.message : 'Check the form and try again.')
+    }
     if (!user) return setError('You need to be signed in.')
 
     setBusy(true)
@@ -128,11 +133,7 @@ export default function AddPieceModal({ onClose, onCreated }: AddPieceModalProps
         image_path: imagePath,
         color_hex: savedColor?.hex ?? null,
         color_name: savedColor?.name ?? null,
-        name,
-        brand: brand || null,
-        category: form.get('category') as Category,
-        price: price === '' ? null : Number(price),
-        wear_count: wears === '' ? 0 : Number(wears),
+        ...values,
       })
       onCreated(piece)
       onClose()
@@ -222,11 +223,7 @@ export default function AddPieceModal({ onClose, onCreated }: AddPieceModalProps
               className="modal__photo-empty"
               onClick={() => fileRef.current?.click()}
             >
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <circle cx="8.5" cy="8.5" r="1.5" />
-                <path d="m21 15-5-5L5 21" />
-              </svg>
+              <ImageOutlined sx={{ fontSize: 26 }} />
               <span>Add a photo</span>
               <small>optional</small>
             </button>
@@ -240,37 +237,7 @@ export default function AddPieceModal({ onClose, onCreated }: AddPieceModalProps
           </p>
         )}
 
-        <label className="modal__field">
-          <span>Name</span>
-          <input name="name" required maxLength={120} placeholder="Ribbed Turtleneck" autoFocus />
-        </label>
-
-        <label className="modal__field">
-          <span>Brand</span>
-          <input name="brand" placeholder="Isadora Studio" />
-        </label>
-
-        <label className="modal__field">
-          <span>Category</span>
-          <select name="category" defaultValue="Clothing">
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <div className="modal__row">
-          <label className="modal__field">
-            <span>Price ($)</span>
-            <input name="price" type="number" min="0" step="0.01" placeholder="0.00" />
-          </label>
-          <label className="modal__field">
-            <span>Times worn</span>
-            <input name="wear_count" type="number" min="0" step="1" placeholder="0" />
-          </label>
-        </div>
+        <PieceFields categories={categories} />
 
         {error && (
           <p className="modal__error" role="alert">

@@ -9,7 +9,8 @@
 - Function components, default-exported, one per file: `PascalCase.tsx`.
 - Strict TS. `npx tsc -b` and `npx eslint src` (run from `Frontend/`) must both be clean before
   you finish.
-- Don't add dependencies without a reason; prefer plain CSS and inline SVG icons (no icon lib).
+- Don't add dependencies without a reason. Styling is plain CSS. Icons come from
+  `@mui/icons-material` (Outlined variants, per-icon path imports); don't hand-draw new SVG icons.
 - Match the surrounding code's style and comment density. No stray comments narrating the obvious.
 - Hard-coded mock data lives at the top of the page file for now; when a page gets real data,
   replace the constant with a Supabase query and keep the same shape.

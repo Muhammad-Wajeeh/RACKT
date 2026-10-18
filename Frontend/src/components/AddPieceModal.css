@@ -54,6 +54,11 @@
   color: var(--ink);
 }
 
+.modal__close:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+
 .modal__photo {
   position: relative;
   height: 180px;

@@ -13,7 +13,12 @@ and storage "bins", and track cost per wear.
 
 ## Current status
 
-- Built (UI mockups, mostly hard-coded data): Closet, Outfits, Bins, Profile, Login/Signup pages.
+- Built and wired to Supabase: Closet (add / edit / delete pieces, photos with optional
+  background removal and colour detection, log wears, search, sort and filter), Categories
+  (user-defined, 3 levels), Outfits (stacked-slot builder, tags, notes, cover photo, wear an
+  outfit), Bins (storage containers; move pieces in and out, filter and search by bin),
+  Profile (real member-since date, stats, name and picture, CSV export).
+- Not built: Forgot password, Google sign-in setup in Supabase, measurements/sizing, account deletion.
 - Wired to Supabase: authentication only (email/password; Google button is coded but the provider is not enabled yet).
 - Database: `pieces` migration written; check `docs/database.md` for whether it has been applied.
 - Not started: reading/writing real data on pages, image upload, bins and outfits tables, forgot-password flow.

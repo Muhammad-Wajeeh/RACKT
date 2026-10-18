@@ -1,12 +1,44 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import AddOutlined from '@mui/icons-material/AddOutlined'
+import ChecklistOutlined from '@mui/icons-material/ChecklistOutlined'
+import CheckroomOutlined from '@mui/icons-material/CheckroomOutlined'
+import CheckOutlined from '@mui/icons-material/CheckOutlined'
+import ImageOutlined from '@mui/icons-material/ImageOutlined'
+import Inventory2Outlined from '@mui/icons-material/Inventory2Outlined'
+import SearchOutlined from '@mui/icons-material/SearchOutlined'
 import AddPieceModal from '../components/AddPieceModal'
+import BinPickerModal from '../components/BinPickerModal'
 import PageHeader from '../components/PageHeader'
-import { getSignedUrls } from '../lib/images'
-import { CATEGORIES, fetchPieces, type Piece } from '../lib/pieces'
+import PieceDetails from '../components/PieceDetails'
+import SortFilterMenu from '../components/SortFilterMenu'
+import { binName, fetchBins, movePiecesToBin, type Bin } from '../lib/bins'
+import {
+  buildTree,
+  categoryName,
+  categoryPath,
+  fetchCategories,
+  findNode,
+  subtreeIds,
+  type Category,
+  type CategoryNode,
+} from '../lib/categories'
+import {
+  DEFAULT_SORT,
+  EMPTY_FILTERS,
+  activeFilterCount,
+  filterPieces,
+  sortPieces,
+  type Filters,
+  type SortKey,
+} from '../lib/closetView'
+import { deletePiece, fetchPieces, logWear, type Piece } from '../lib/pieces'
+import { useImageUrls } from '../lib/useImageUrls'
+import { useClosetCount } from '../layouts/ClosetCount'
 import './ClosetPage.css'
 
-const FILTERS = ['All', ...CATEGORIES]
+/** `null` = all pieces, UNCATEGORIZED = pieces with no category, otherwise a category id. */
+const UNCATEGORIZED = 'uncategorized'
+type Filter = string | null
 
 function priceLabel(p: Piece) {
   if (p.cost_per_wear != null) return `$${p.cost_per_wear.toFixed(2)} / wear`
@@ -14,84 +46,142 @@ function priceLabel(p: Piece) {
   return ''
 }
 
-const iconProps = {
-  width: 18,
-  height: 18,
-  viewBox: '0 0 24 24',
-  fill: 'none',
-  stroke: 'currentColor',
-  strokeWidth: 1.8,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
-  'aria-hidden': true,
-}
-
-function ImageIcon({ size = 26 }: { size?: number }) {
-  return (
-    <svg {...iconProps} width={size} height={size} strokeWidth={1.5}>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <circle cx="8.5" cy="8.5" r="1.5" />
-      <path d="m21 15-5-5L5 21" />
-    </svg>
-  )
-}
-
 export default function ClosetPage() {
   const [pieces, setPieces] = useState<Piece[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
-  const [urls, setUrls] = useState<Record<string, string>>({})
-  const requested = useRef(new Set<string>())
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [filter, setFilter] = useState<Filter>(null)
+  const [query, setQuery] = useState('')
+  const [sort, setSort] = useState<SortKey>(DEFAULT_SORT)
+  const [viewFilters, setViewFilters] = useState<Filters>(EMPTY_FILTERS)
+  const [bins, setBins] = useState<Bin[]>([])
+  const [selectMode, setSelectMode] = useState(false)
+  const [checkedIds, setCheckedIds] = useState<string[]>([])
+  const [bulkMoving, setBulkMoving] = useState(false)
 
   useEffect(() => {
-    fetchPieces()
-      .then(setPieces)
+    Promise.all([fetchPieces(), fetchCategories(), fetchBins()])
+      .then(([loadedPieces, loadedCategories, loadedBins]) => {
+        setPieces(loadedPieces)
+        setCategories(loadedCategories)
+        setBins(loadedBins)
+      })
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false))
   }, [])
 
-  // Fetch signed URLs for any photos we haven't requested yet.
+  const urls = useImageUrls(pieces.map((p) => p.image_path))
+
+  // Keep the sidebar's "items catalogued" count in step with adds and deletes.
+  const { setCount } = useClosetCount()
   useEffect(() => {
-    const missing = pieces
-      .map((p) => p.image_path)
-      .filter((path): path is string => !!path && !requested.current.has(path))
-    if (missing.length === 0) return
-    missing.forEach((path) => requested.current.add(path))
-    getSignedUrls(missing)
-      .then((map) => setUrls((prev) => ({ ...prev, ...map })))
-      .catch(() => missing.forEach((path) => requested.current.delete(path)))
-  }, [pieces])
+    if (!loading && !error) setCount(pieces.length)
+  }, [pieces.length, loading, error, setCount])
+
+  /** Applies the pieces returned by a move to local state. */
+  function applyMoved(updated: Piece[]) {
+    setPieces((prev) => prev.map((p) => updated.find((u) => u.id === p.id) ?? p))
+  }
+
+  function leaveSelectMode() {
+    setSelectMode(false)
+    setCheckedIds([])
+  }
+
+  function toggleChecked(id: string) {
+    setCheckedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+  }
+
+  const tree = buildTree(categories)
+  const selectedNode = filter && filter !== UNCATEGORIZED ? findNode(tree, filter) : null
+
+  // The chain from a top-level type down to the selected category.
+  const pathNodes: CategoryNode[] = []
+  for (let cur = selectedNode; cur; ) {
+    pathNodes.unshift(cur)
+    const parentId: string | null = cur.parent_id
+    cur = parentId ? findNode(tree, parentId) : null
+  }
+
+  // One row of chips per level: the top-level types, then the children of each selected node.
+  const rows: { parent: CategoryNode | null; chips: CategoryNode[] }[] = [
+    { parent: null, chips: tree },
+    ...pathNodes.filter((n) => n.children.length > 0).map((n) => ({ parent: n, chips: n.children })),
+  ]
+
+  const hasUncategorized = pieces.some((p) => !p.category_id)
+
+  const matchesCategory = (p: Piece) => {
+    if (filter === null) return true
+    if (filter === UNCATEGORIZED) return !p.category_id
+    if (!selectedNode) return true // the selected category no longer exists
+    return subtreeIds(selectedNode).includes(p.category_id ?? '')
+  }
+
+  // Every word typed must appear in the piece's name, brand, category path, colour or bin name.
+  const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean)
+  const matchesSearch = (p: Piece) => {
+    if (terms.length === 0) return true
+    const haystack = [
+      p.name,
+      p.brand,
+      categoryPath(categories, p.category_id),
+      p.color_name,
+      binName(bins, p.bin_id),
+    ]
+      .join(' ')
+      .toLowerCase()
+    return terms.every((t) => haystack.includes(t))
+  }
+
+  const visible = sortPieces(
+    filterPieces(
+      pieces.filter((p) => matchesCategory(p) && matchesSearch(p)),
+      viewFilters,
+    ),
+    sort,
+  )
+
+  const selected = pieces.find((p) => p.id === selectedId) ?? null
 
   return (
     <>
       <PageHeader eyebrow="Catalogue" title="The Closet">
         <label className="closet-search">
-          <svg {...iconProps} width={16} height={16}>
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-3.5-3.5" />
-          </svg>
-          <input type="search" placeholder="Search your closet..." />
+          <SearchOutlined sx={{ fontSize: 18 }} />
+          <input
+            type="search"
+            placeholder="Search your closet..."
+            aria-label="Search your closet"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
         </label>
 
         <div className="closet-actions">
-          <button type="button" className="btn btn--icon" aria-label="Sort and filter">
-            <svg {...iconProps}>
-              <path d="M4 7h10M18 7h2M4 17h2M10 17h10" />
-              <circle cx="16" cy="7" r="2" />
-              <circle cx="8" cy="17" r="2" />
-            </svg>
-          </button>
-          <button type="button" className="btn">
-            <svg {...iconProps}>
-              <path d="m3 6 1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17M11 6.5h10M11 12.5h10M11 18.5h10" />
-            </svg>
-            SELECT
+          <SortFilterMenu
+            pieces={pieces}
+            bins={bins}
+            sort={sort}
+            onSortChange={setSort}
+            filters={viewFilters}
+            onFiltersChange={setViewFilters}
+            shownCount={visible.length}
+          />
+          <button
+            type="button"
+            className="btn"
+            aria-pressed={selectMode}
+            onClick={() => (selectMode ? leaveSelectMode() : setSelectMode(true))}
+          >
+            <ChecklistOutlined sx={{ fontSize: 18 }} />
+            {selectMode ? 'DONE' : 'SELECT'}
           </button>
           <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
-            <svg {...iconProps}>
-              <path d="M12 5v14M5 12h14" />
-            </svg>
+            <AddOutlined sx={{ fontSize: 18 }} />
             ADD PIECE
           </button>
         </div>
@@ -99,70 +189,202 @@ export default function ClosetPage() {
 
       <div className="closet-body">
         <section className="closet-main">
-          <div className="closet-filters">
-            {FILTERS.map((f, i) => (
+          {rows.map((row, i) => {
+            const allActive = row.parent ? filter === row.parent.id : filter === null
+            return (
+              <div key={row.parent?.id ?? 'root'} className="closet-filters">
+                <button
+                  type="button"
+                  className={`chip${allActive ? ' chip--active' : ''}`}
+                  onClick={() => setFilter(row.parent ? row.parent.id : null)}
+                >
+                  {row.parent ? `All ${row.parent.name}` : 'All'}
+                </button>
+                {row.chips.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    className={`chip${pathNodes.some((n) => n.id === c.id) ? ' chip--active' : ''}`}
+                    onClick={() => setFilter(c.id)}
+                  >
+                    {c.name}
+                  </button>
+                ))}
+                {i === 0 && hasUncategorized && (
+                  <button
+                    type="button"
+                    className={`chip${filter === UNCATEGORIZED ? ' chip--active' : ''}`}
+                    onClick={() => setFilter(UNCATEGORIZED)}
+                  >
+                    Uncategorized
+                  </button>
+                )}
+              </div>
+            )
+          })}
+
+          {selectMode && (
+            <div className="closet-selectbar">
+              <span>
+                {checkedIds.length} selected
+              </span>
               <button
-                key={f}
                 type="button"
-                className={`chip${i === 0 ? ' chip--active' : ''}`}
+                className="btn"
+                onClick={() => setCheckedIds(visible.map((p) => p.id))}
               >
-                {f}
+                SELECT ALL SHOWN
               </button>
-            ))}
-          </div>
+              <button
+                type="button"
+                className="btn"
+                disabled={checkedIds.length === 0}
+                onClick={() => setCheckedIds([])}
+              >
+                CLEAR
+              </button>
+              <button
+                type="button"
+                className="btn btn--primary"
+                disabled={checkedIds.length === 0}
+                onClick={() => setBulkMoving(true)}
+              >
+                <Inventory2Outlined sx={{ fontSize: 16 }} />
+                MOVE TO BIN
+              </button>
+            </div>
+          )}
 
           {error && <p className="closet-status closet-status--error">{error}</p>}
           {loading && <p className="closet-status">Loading your closet…</p>}
           {!loading && !error && pieces.length === 0 && (
             <p className="closet-status">Nothing here yet. Add your first piece.</p>
           )}
+          {!loading && !error && pieces.length > 0 && visible.length === 0 && (
+            <p className="closet-status">
+              {terms.length > 0 || activeFilterCount(viewFilters) > 0
+                ? 'No pieces match your search or filters.'
+                : 'No pieces in this category.'}
+            </p>
+          )}
 
           <div className="closet-grid">
-            {pieces.map((p) => (
-              <Link key={p.id} to={`/closet/${p.id}`} className="piece">
-                <div className="piece__image">
-                  {p.image_path && urls[p.image_path] ? (
-                    <img className="piece__photo" src={urls[p.image_path]} alt={p.name} />
-                  ) : (
-                    <>
-                      <ImageIcon />
-                      <span className="piece__drop">{p.category}</span>
-                    </>
-                  )}
-                </div>
-                <div className="piece__info">
-                  <span className="piece__category">
-                    {p.category}
-                    {p.color_hex && (
-                      <i
-                        className="swatch"
-                        style={{ background: p.color_hex }}
-                        title={p.color_name ?? undefined}
-                      />
+            {visible.map((p) => {
+              const label = categoryName(categories, p.category_id)
+              const inBin = binName(bins, p.bin_id)
+              const checked = checkedIds.includes(p.id)
+              const activate = () => (selectMode ? toggleChecked(p.id) : setSelectedId(p.id))
+              return (
+                <article
+                  key={p.id}
+                  className={`piece${
+                    selectMode ? (checked ? ' piece--selected' : '') : p.id === selectedId ? ' piece--selected' : ''
+                  }`}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={selectMode ? checked : p.id === selectedId}
+                  onClick={activate}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      activate()
+                    }
+                  }}
+                >
+                  <div className="piece__image">
+                    {selectMode && (
+                      <span className={`piece__check${checked ? ' is-on' : ''}`} aria-hidden="true">
+                        {checked && <CheckOutlined sx={{ fontSize: 14 }} />}
+                      </span>
                     )}
-                  </span>
-                  <h3>{p.name}</h3>
-                  <div className="piece__meta">
-                    <span>{p.brand}</span>
-                    <span>{priceLabel(p)}</span>
+                    {inBin && (
+                      <span className="piece__bin" title={`In ${inBin}`}>
+                        <Inventory2Outlined sx={{ fontSize: 12 }} />
+                        <span>{inBin}</span>
+                      </span>
+                    )}
+                    {p.image_path && urls[p.image_path] ? (
+                      <img className="piece__photo" src={urls[p.image_path]} alt={p.name} />
+                    ) : (
+                      <>
+                        <ImageOutlined sx={{ fontSize: 26 }} />
+                        <span className="piece__drop">{label}</span>
+                      </>
+                    )}
                   </div>
-                </div>
-              </Link>
-            ))}
+                  <div className="piece__info">
+                    <span className="piece__category">
+                      {label}
+                      {p.color_hex && (
+                        <i
+                          className="swatch"
+                          style={{ background: p.color_hex }}
+                          title={p.color_name ?? undefined}
+                        />
+                      )}
+                    </span>
+                    <h3>{p.name}</h3>
+                    <div className="piece__meta">
+                      <span>{p.brand}</span>
+                      <span>{priceLabel(p)}</span>
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
           </div>
         </section>
 
-        <aside className="closet-details">
-          <svg {...iconProps} width={32} height={32} strokeWidth={1.4}>
-            <path d="M12 7.5a2.2 2.2 0 1 0-2.2-2.2" />
-            <path d="M12 7.5v2L3 17a1.5 1.5 0 0 0 1 2.6h16a1.5 1.5 0 0 0 1-2.6l-9-7.5" />
-          </svg>
-          <p>Select a piece to see details.</p>
+        <aside className={`closet-details${selected ? ' closet-details--filled' : ''}`}>
+          {selected ? (
+            <PieceDetails
+              key={selected.id}
+              piece={selected}
+              categories={categories}
+              bins={bins}
+              imageUrl={selected.image_path ? (urls[selected.image_path] ?? null) : null}
+              onClose={() => setSelectedId(null)}
+              onMoveToBin={async (binId) => applyMoved(await movePiecesToBin(binId, [selected.id]))}
+              onUpdated={(updated) =>
+                setPieces((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
+              }
+              onLogWear={async () => {
+                const updated = await logWear(selected)
+                setPieces((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
+              }}
+              onDelete={async () => {
+                await deletePiece(selected)
+                setPieces((prev) => prev.filter((p) => p.id !== selected.id))
+                setSelectedId(null)
+              }}
+            />
+          ) : (
+            <>
+              <CheckroomOutlined sx={{ fontSize: 32 }} />
+              <p>Select a piece to see details.</p>
+            </>
+          )}
         </aside>
       </div>
 
+      {bulkMoving && (
+        <BinPickerModal
+          title="Move to bin"
+          eyebrow={`${checkedIds.length} ${checkedIds.length === 1 ? 'piece' : 'pieces'}`}
+          bins={bins}
+          initial={bins[0]?.id ?? ''}
+          submitLabel="MOVE"
+          onClose={() => setBulkMoving(false)}
+          onSubmit={async (binId) => {
+            applyMoved(await movePiecesToBin(binId, checkedIds))
+            leaveSelectMode()
+          }}
+        />
+      )}
+
       {adding && (
         <AddPieceModal
+          categories={categories}
           onClose={() => setAdding(false)}
           onCreated={(piece) => setPieces((prev) => [piece, ...prev])}
         />

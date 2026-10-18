@@ -46,6 +46,11 @@
   margin-bottom: 18px;
 }
 
+.closet-filters + .closet-filters {
+  margin-top: -6px;
+  padding-left: 14px;
+}
+
 .chip {
   height: 25px;
   padding: 0 10px;
@@ -89,6 +94,16 @@
   background: #e0e0e0;
 }
 
+.piece--selected {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.piece:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
 .piece__image {
   position: relative;
   display: flex;
@@ -100,6 +115,73 @@
   border: 1px dashed #aaa;
   background: #e0e0e0;
   color: #888;
+}
+
+.closet-selectbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--accent);
+  font-size: 12px;
+}
+
+.closet-selectbar span {
+  margin-right: auto;
+  font-weight: 700;
+}
+
+.closet-selectbar .btn {
+  height: 30px;
+  padding: 0 12px;
+  font-size: 11px;
+}
+
+.closet-selectbar .btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.piece__check {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #8f8f8f;
+  background: #fff;
+  color: #fff;
+}
+
+.piece__check.is-on {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.piece__bin {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(100% - 12px);
+  padding: 2px 6px;
+  border: 1px solid #999;
+  background: rgba(241, 241, 241, 0.92);
+  color: #555;
+  font-size: 10px;
+}
+
+.piece__bin span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .piece__photo {
@@ -114,23 +196,6 @@
   margin-top: 8px;
   font-size: 13px;
   font-weight: 500;
-}
-
-.piece__browse {
-  font-size: 10px;
-}
-
-.piece__badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border: 1px solid #999;
-  background: #f1f1f1;
-  color: #666;
 }
 
 .piece__info {
@@ -178,6 +243,16 @@
   border-left: 2px solid #9a9a9a;
   color: var(--muted);
   font-size: 12px;
+}
+
+.closet-details--filled {
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 0;
+  padding: 20px 24px 28px;
+  overflow-y: auto;
+  color: var(--ink);
+  font-size: inherit;
 }
 
 .closet-details p {

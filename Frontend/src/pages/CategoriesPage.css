@@ -1,0 +1,100 @@
+.cats-actions {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.cats-actions .btn {
+  text-decoration: none;
+}
+
+.cats-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px;
+}
+
+.cats {
+  max-width: 760px;
+}
+
+.cats__hint {
+  margin: 0 0 20px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.cats__status {
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.cats__status--error {
+  color: var(--accent);
+}
+
+.cats__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid #aaa;
+}
+
+.cat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding-right: 8px;
+  border-bottom: 1px solid #aaa;
+}
+
+.cat:hover {
+  background: var(--panel);
+}
+
+.cat__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.cat__guide {
+  margin-right: 8px;
+  color: var(--muted);
+}
+
+.cat__count {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.cat__actions {
+  display: flex;
+  gap: 2px;
+}
+
+.cat__actions button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  background: transparent;
+  color: #777;
+  cursor: pointer;
+}
+
+.cat__actions button:hover {
+  background: #ddd;
+  color: var(--ink);
+}
+
+.cat__actions .cat__delete:hover {
+  color: var(--accent);
+}

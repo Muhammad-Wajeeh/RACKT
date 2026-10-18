@@ -114,6 +114,47 @@ export async function uploadPieceImage(
   return path
 }
 
+/**
+ * Uploads an outfit cover photo to "<userId>/outfit-<outfitId>-<timestamp>.<ext>". Each upload gets
+ * a fresh path, so a replaced cover never shows a stale cached image.
+ */
+export async function uploadOutfitCover(
+  userId: string,
+  outfitId: string,
+  image: PreparedImage,
+): Promise<string> {
+  const path = `${userId}/outfit-${outfitId}-${Date.now()}.${image.ext}`
+  const { error } = await supabase.storage.from(BUCKET).upload(path, image.blob, {
+    contentType: image.blob.type,
+  })
+  if (error) throw error
+  return path
+}
+
+/** Uploads a profile picture to "<userId>/avatar-<timestamp>.<ext>" and returns the storage path. */
+export async function uploadAvatar(userId: string, image: PreparedImage): Promise<string> {
+  const path = `${userId}/avatar-${Date.now()}.${image.ext}`
+  const { error } = await supabase.storage.from(BUCKET).upload(path, image.blob, {
+    contentType: image.blob.type,
+  })
+  if (error) throw error
+  return path
+}
+
+/** Uploads a bin photo to "<userId>/bin-<binId>-<timestamp>.<ext>" and returns the storage path. */
+export async function uploadBinPhoto(
+  userId: string,
+  binId: string,
+  image: PreparedImage,
+): Promise<string> {
+  const path = `${userId}/bin-${binId}-${Date.now()}.${image.ext}`
+  const { error } = await supabase.storage.from(BUCKET).upload(path, image.blob, {
+    contentType: image.blob.type,
+  })
+  if (error) throw error
+  return path
+}
+
 export async function removePieceImage(path: string): Promise<void> {
   await supabase.storage.from(BUCKET).remove([path])
 }

@@ -1,22 +1,14 @@
+import { removePieceImage } from './images'
 import { supabase } from './supabase'
-
-export const CATEGORIES = [
-  'Clothing',
-  'Tops',
-  'Bottoms',
-  'Footwear',
-  'Jewelry',
-  'Headwear',
-  'Accessories',
-] as const
-
-export type Category = (typeof CATEGORIES)[number]
 
 export interface Piece {
   id: string
   name: string
   brand: string | null
-  category: Category
+  /** Null = uncategorized. See lib/categories.ts. */
+  category_id: string | null
+  /** The bin this piece is stored in, or null. See lib/bins.ts. */
+  bin_id: string | null
   price: number | null
   wear_count: number
   image_path: string | null
@@ -27,16 +19,36 @@ export interface Piece {
   updated_at: string
 }
 
-export interface NewPiece {
+/** The fields the add and edit forms share. */
+export interface PieceFormValues {
+  name: string
+  brand: string | null
+  category_id: string | null
+  price: number | null
+  wear_count: number
+}
+
+export interface NewPiece extends PieceFormValues {
   id: string
   image_path: string | null
   color_hex: string | null
   color_name: string | null
-  name: string
-  brand: string | null
-  category: Category
-  price: number | null
-  wear_count: number
+}
+
+/** Reads the shared piece form fields. Throws an Error with a user-facing message if invalid. */
+export function parsePieceForm(form: FormData): PieceFormValues {
+  const name = String(form.get('name') ?? '').trim()
+  if (!name) throw new Error('Name is required.')
+  const brand = String(form.get('brand') ?? '').trim()
+  const price = String(form.get('price') ?? '').trim()
+  const wears = String(form.get('wear_count') ?? '').trim()
+  return {
+    name,
+    brand: brand || null,
+    category_id: String(form.get('category_id') ?? '') || null,
+    price: price === '' ? null : Number(price),
+    wear_count: wears === '' ? 0 : Number(wears),
+  }
 }
 
 export async function fetchPieces(): Promise<Piece[]> {
@@ -48,11 +60,49 @@ export async function fetchPieces(): Promise<Piece[]> {
   return data as Piece[]
 }
 
-/** Returns null when the piece doesn't exist or isn't yours (RLS hides it). */
-export async function fetchPiece(id: string): Promise<Piece | null> {
-  const { data, error } = await supabase.from('pieces').select('*').eq('id', id).maybeSingle()
+/** How many pieces you own (a cheap count query, no rows downloaded). */
+export async function fetchPieceCount(): Promise<number> {
+  const { count, error } = await supabase
+    .from('pieces')
+    .select('id', { count: 'exact', head: true })
   if (error) throw error
-  return data as Piece | null
+  return count ?? 0
+}
+
+/** Saves edited fields and returns the updated piece (with a recalculated `cost_per_wear`). */
+export async function updatePiece(id: string, values: PieceFormValues): Promise<Piece> {
+  const { data, error } = await supabase
+    .from('pieces')
+    .update(values)
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data as Piece
+}
+
+/**
+ * Adds one wear and returns the updated piece. The database recalculates `cost_per_wear`
+ * (price / wear_count) itself, so the returned row already has the new value.
+ */
+export async function logWear(piece: Piece): Promise<Piece> {
+  const { data, error } = await supabase
+    .from('pieces')
+    .update({ wear_count: piece.wear_count + 1 })
+    .eq('id', piece.id)
+    .select()
+    .single()
+  if (error) throw error
+  return data as Piece
+}
+
+/** Deletes the row, then its photo. Throws if nothing was deleted (not found, or not yours). */
+export async function deletePiece(piece: Piece): Promise<void> {
+  const { data, error } = await supabase.from('pieces').delete().eq('id', piece.id).select('id')
+  if (error) throw error
+  if (!data || data.length === 0) throw new Error('Could not delete this piece.')
+  // Best effort: if this fails we only leave an orphaned file, not a broken piece.
+  if (piece.image_path) await removePieceImage(piece.image_path).catch(() => {})
 }
 
 // user_id is filled in by the database (default auth.uid()).

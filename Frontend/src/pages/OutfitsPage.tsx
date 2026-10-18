@@ -1,35 +1,109 @@
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import AddOutlined from '@mui/icons-material/AddOutlined'
+import DryCleaningOutlined from '@mui/icons-material/DryCleaningOutlined'
+import OutfitCollage from '../components/OutfitCollage'
 import PageHeader from '../components/PageHeader'
+import { fetchOutfits, type Outfit } from '../lib/outfits'
+import { fetchPieces, type Piece } from '../lib/pieces'
+import { useImageUrls } from '../lib/useImageUrls'
 import './OutfitsPage.css'
 
-const iconProps = {
-  viewBox: '0 0 24 24',
-  fill: 'none',
-  stroke: 'currentColor',
-  strokeWidth: 1.6,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
-  'aria-hidden': true,
-}
-
 export default function OutfitsPage() {
+  const [outfits, setOutfits] = useState<Outfit[]>([])
+  const [pieces, setPieces] = useState<Piece[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [tag, setTag] = useState<string | null>(null)
+
+  useEffect(() => {
+    Promise.all([fetchOutfits(), fetchPieces()])
+      .then(([loadedOutfits, loadedPieces]) => {
+        setOutfits(loadedOutfits)
+        setPieces(loadedPieces)
+      })
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const urls = useImageUrls([
+    ...pieces.map((p) => p.image_path),
+    ...outfits.map((o) => o.cover_image_path),
+  ])
+  const pieceById = new Map(pieces.map((p) => [p.id, p]))
+
+  const allTags = [...new Set(outfits.flatMap((o) => o.tags))].sort()
+  const visible = outfits.filter((o) => tag === null || o.tags.includes(tag))
+
   return (
     <>
       <PageHeader eyebrow="The Archive" title="Your Looks">
-        <button type="button" className="btn btn--primary outfits-new">
-          <svg {...iconProps} width={18} height={18} strokeWidth={1.8}>
-            <path d="M12 5v14M5 12h14" />
-          </svg>
+        <Link to="/outfits/new" className="btn btn--primary outfits-new">
+          <AddOutlined sx={{ fontSize: 18 }} />
           NEW LOOK
-        </button>
+        </Link>
       </PageHeader>
 
-      <div className="outfits-empty">
-        <svg {...iconProps} width={32} height={32}>
-          <path d="M12 6.5a2 2 0 1 0-2-2" />
-          <path d="M12 6.5v2" />
-          <path d="M12 8.5 4 13l2 3 2-1v5h8v-5l2 1 2-3-8-4.5Z" />
-        </svg>
-        <p>No looks saved yet — build your first.</p>
+      <div className="outfits-scroll">
+        {error && <p className="outfits-status outfits-status--error">{error}</p>}
+        {loading && <p className="outfits-status">Loading your looks…</p>}
+
+        {!loading && !error && outfits.length === 0 && (
+          <div className="outfits-empty">
+            <DryCleaningOutlined sx={{ fontSize: 32 }} />
+            <p>No looks saved yet — build your first.</p>
+          </div>
+        )}
+
+        {allTags.length > 0 && (
+          <div className="look-tags">
+            <button
+              type="button"
+              className={`look-tag${tag === null ? ' is-on' : ''}`}
+              onClick={() => setTag(null)}
+            >
+              All
+            </button>
+            {allTags.map((t) => (
+              <button
+                key={t}
+                type="button"
+                className={`look-tag${tag === t ? ' is-on' : ''}`}
+                onClick={() => setTag(t)}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="looks">
+          {visible.map((o) => {
+            const tiles = o.piece_ids
+              .map((id) => pieceById.get(id))
+              .filter((p): p is Piece => !!p)
+              .map((p) => ({
+                id: p.id,
+                name: p.name,
+                url: p.image_path ? (urls[p.image_path] ?? null) : null,
+              }))
+            return (
+              <Link key={o.id} to={`/outfits/${o.id}`} className="look">
+                <OutfitCollage
+                  tiles={tiles}
+                  coverUrl={o.cover_image_path ? (urls[o.cover_image_path] ?? null) : null}
+                />
+                <div className="look__info">
+                  <h3>{o.name}</h3>
+                  <span>
+                    {tiles.length} {tiles.length === 1 ? 'piece' : 'pieces'}
+                    {o.tags.length > 0 && ` · ${o.tags.join(', ')}`}
+                  </span>
+                </div>
+              </Link>
+            )
+          })}
+        </div>
       </div>
     </>
   )
