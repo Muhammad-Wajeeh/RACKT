@@ -53,6 +53,16 @@ components are used.
 
 Signed-in routes sit inside `RequireAuth` (redirects to `/login`) and `AppLayout`.
 
+## Deployment (Cloudflare)
+
+The frontend is a static site hosted on Cloudflare (Git-connected, redeploys on push). Settings:
+root directory `Frontend`, build command `npm run build`, deploy command `npx wrangler deploy`
+(config in `Frontend/wrangler.jsonc`, which serves `dist/` and falls back to `index.html` for
+client-side routes). `Frontend/.node-version` pins Node 22. Build variables to set in the Cloudflare
+dashboard (they're baked in at build time): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.
+After each new live URL, add it in Supabase under Authentication > URL Configuration (Site URL and
+Redirect URLs), and later in Google's authorized origins for Google sign-in.
+
 ## Sidebar item count
 
 The "No. N items catalogued" footer reads `useClosetCount()` (`src/layouts/ClosetCount.tsx`). The
