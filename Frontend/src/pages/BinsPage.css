@@ -38,7 +38,7 @@
 }
 
 .bin:hover {
-  background: #e2e2e2;
+  background: var(--hover);
 }
 
 .bin--selected {
@@ -55,14 +55,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #777;
+  color: var(--icon);
 }
 
 .bin__thumb {
   width: 36px;
   height: 36px;
   object-fit: cover;
-  border: 1px solid #cfcfcf;
+  border: 1px solid var(--line);
 }
 
 .bin__count {
@@ -98,8 +98,8 @@
   gap: 10px;
   width: 378px;
   flex-shrink: 0;
-  border-left: 2px solid #9a9a9a;
-  color: #aaa;
+  border-left: 2px solid var(--line-heavy);
+  color: var(--icon);
   font-size: 12px;
 }
 
@@ -159,7 +159,7 @@
   font-size: 12px;
   line-height: 1.5;
   white-space: pre-wrap;
-  color: #555;
+  color: var(--text-label);
 }
 
 .bd__photo {
@@ -168,7 +168,7 @@
   aspect-ratio: 4 / 3;
   margin-top: 16px;
   object-fit: cover;
-  border: 1px solid #cfcfcf;
+  border: 1px solid var(--line);
 }
 
 .bd__buttons {
@@ -202,7 +202,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #555;
+  color: var(--text-label);
 }
 
 .bins-details .bd__empty {
@@ -213,7 +213,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid #aaa;
+  border-top: 1px solid var(--divider);
 }
 
 .bd__list li {
@@ -221,7 +221,7 @@
   align-items: center;
   gap: 10px;
   padding: 8px 0;
-  border-bottom: 1px solid #aaa;
+  border-bottom: 1px solid var(--divider);
 }
 
 .bd__thumb {
@@ -230,9 +230,9 @@
   place-items: center;
   width: 40px;
   height: 40px;
-  border: 1px solid #cfcfcf;
-  background: #e0e0e0;
-  color: #888;
+  border: 1px solid var(--line);
+  background: var(--placeholder);
+  color: var(--icon);
 }
 
 .bd__thumb img {
@@ -257,12 +257,12 @@
   height: 28px;
   border: 0;
   background: transparent;
-  color: #888;
+  color: var(--icon);
   cursor: pointer;
 }
 
 .bd__list button:hover {
-  background: #ddd;
+  background: var(--hover);
   color: var(--accent);
 }
 

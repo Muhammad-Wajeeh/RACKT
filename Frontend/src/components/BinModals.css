@@ -14,7 +14,7 @@
   gap: 10px;
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid #cfcfcf;
+  border: 1px solid var(--line);
   background: var(--panel);
   color: var(--ink);
   font-size: 13px;
@@ -22,7 +22,7 @@
 }
 
 .binopt:hover {
-  border-color: #8f8f8f;
+  border-color: var(--line-strong);
 }
 
 .binopt.is-on {
@@ -55,8 +55,8 @@
 .binmodal__textarea {
   box-sizing: border-box;
   padding: 10px 12px;
-  border: 1px solid #8f8f8f;
-  background: #fff;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
   color: var(--ink);
   font: inherit;
   font-size: 13px;
@@ -79,7 +79,7 @@
   width: 84px;
   height: 84px;
   object-fit: cover;
-  border: 1px solid #cfcfcf;
+  border: 1px solid var(--line);
 }
 
 .binmodal__photo > div {
@@ -100,10 +100,10 @@
   place-items: center;
   width: 84px;
   height: 84px;
-  border: 1px dashed #aaa;
+  border: 1px dashed var(--divider);
   border-radius: 50%;
-  background: #e0e0e0;
-  color: #888;
+  background: var(--placeholder);
+  color: var(--icon);
 }
 
 .binmodal__photo-add {
@@ -112,9 +112,9 @@
   justify-content: center;
   gap: 8px;
   height: 64px;
-  border: 1px dashed #aaa;
-  background: #e0e0e0;
-  color: #777;
+  border: 1px dashed var(--divider);
+  background: var(--placeholder);
+  color: var(--icon);
   font-size: 12px;
   cursor: pointer;
 }
@@ -129,7 +129,7 @@
   gap: 8px;
   height: 38px;
   padding: 0 12px;
-  border: 1px solid #8f8f8f;
+  border: 1px solid var(--line-strong);
   color: var(--muted);
 }
 
@@ -169,9 +169,9 @@
   display: grid;
   place-items: center;
   aspect-ratio: 1;
-  border: 1px solid #cfcfcf;
-  background: #e0e0e0;
-  color: #888;
+  border: 1px solid var(--line);
+  background: var(--placeholder);
+  color: var(--icon);
 }
 
 .addpiece__image img {

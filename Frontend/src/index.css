@@ -1,15 +1,60 @@
+/*
+ * Theme colors. Every stylesheet uses these variables instead of hard-coded greys, so dark mode is
+ * just the second block below (applied when <html data-theme="dark">, see src/lib/theme.ts).
+ */
 :root {
   --accent: #e8311a;
-  --ink: #141414;
-  --muted: #8a8a8a;
-  --bg: #f1f1f1;
-  --panel: #e9e9e9;
-  --line: #cfcfcf;
+  --accent-hover: #cf2813;
 
+  --ink: #141414; /* main text */
+  --muted: #8a8a8a; /* secondary text */
+  --bg: #f1f1f1; /* page background */
+  --panel: #e9e9e9; /* cards and raised areas */
+  --surface: #fff; /* inputs and active chips */
+  --hover: #e2e2e2; /* hover and notice fills */
+  --placeholder: #e0e0e0; /* behind photos and empty image slots */
+
+  --line: #cfcfcf; /* light borders */
+  --line-strong: #8f8f8f; /* input and button borders */
+  --line-heavy: #9a9a9a; /* the 2px structural lines */
+  --divider: #aaa; /* list dividers and dashed borders */
+
+  --text-label: #555; /* small uppercase labels */
+  --icon: #888; /* icons and faint text */
+
+  --check-a: #d4d4d4; /* checkerboard behind transparent cutouts */
+  --check-b: #ececec;
+
+  color-scheme: light;
   font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
   color: var(--ink);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
+}
+
+:root[data-theme='dark'] {
+  --accent-hover: #f0432c;
+
+  --ink: #ececec;
+  --muted: #8f8f8f;
+  --bg: #141414;
+  --panel: #1e1e1e;
+  --surface: #1b1b1b;
+  --hover: #2a2a2a;
+  --placeholder: #3a3a3a;
+
+  --line: #333;
+  --line-strong: #5a5a5a;
+  --line-heavy: #4a4a4a;
+  --divider: #444;
+
+  --text-label: #b3b3b3;
+  --icon: #8c8c8c;
+
+  --check-a: #3a3a3a;
+  --check-b: #454545;
+
+  color-scheme: dark;
 }
 
 *,
@@ -34,7 +79,7 @@ input {
   gap: 8px;
   height: 36px;
   padding: 0 16px;
-  border: 1px solid #8f8f8f;
+  border: 1px solid var(--line-strong);
   background: transparent;
   color: var(--ink);
   font-size: 13px;
@@ -61,6 +106,5 @@ input {
 }
 
 .btn--primary:hover {
-  background: #cf2813;
+  background: var(--accent-hover);
 }
-

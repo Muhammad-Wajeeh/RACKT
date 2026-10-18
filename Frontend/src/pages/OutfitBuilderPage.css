@@ -54,7 +54,7 @@
   gap: 8px;
   height: 38px;
   padding: 0 12px;
-  border: 1px solid #8f8f8f;
+  border: 1px solid var(--line-strong);
   color: var(--muted);
 }
 
@@ -72,8 +72,8 @@
   width: 190px;
   height: 38px;
   padding: 0 10px;
-  border: 1px solid #8f8f8f;
-  background: #fff;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
   color: var(--ink);
   font-size: 12px;
 }
@@ -108,9 +108,9 @@
   display: grid;
   place-items: center;
   aspect-ratio: 1;
-  border: 1px solid #cfcfcf;
-  background: #e0e0e0;
-  color: #888;
+  border: 1px solid var(--line);
+  background: var(--placeholder);
+  color: var(--icon);
 }
 
 .pick__image img {
@@ -121,7 +121,7 @@
 }
 
 .pick:hover .pick__image {
-  border-color: #8f8f8f;
+  border-color: var(--line-strong);
 }
 
 .pick.is-on .pick__image {
@@ -174,7 +174,7 @@
   align-items: center;
   gap: 10px;
   padding: 8px 8px 8px 4px;
-  border: 1px solid #cfcfcf;
+  border: 1px solid var(--line);
   background: var(--panel);
 }
 
@@ -196,7 +196,7 @@
   display: grid;
   place-items: center;
   width: 20px;
-  color: #999;
+  color: var(--icon);
   cursor: grab;
 }
 
@@ -207,9 +207,9 @@
   width: 84px;
   height: 84px;
   padding: 0;
-  border: 1px dashed #aaa;
-  background: #e0e0e0;
-  color: #888;
+  border: 1px dashed var(--divider);
+  background: var(--placeholder);
+  color: var(--icon);
   cursor: pointer;
 }
 
@@ -222,7 +222,7 @@
 
 .slot__thumb:has(img) {
   border-style: solid;
-  border-color: #cfcfcf;
+  border-color: var(--line);
 }
 
 .slot__meta {
@@ -263,12 +263,12 @@
   height: 24px;
   border: 0;
   background: transparent;
-  color: #777;
+  color: var(--icon);
   cursor: pointer;
 }
 
 .slot__controls button:hover:not(:disabled) {
-  background: #ddd;
+  background: var(--hover);
   color: var(--ink);
 }
 
@@ -287,7 +287,7 @@
   justify-content: center;
   gap: 6px;
   height: 40px;
-  border: 1px dashed #8f8f8f;
+  border: 1px dashed var(--line-strong);
   background: transparent;
   color: var(--ink);
   font-size: 12px;
@@ -308,7 +308,7 @@
   flex-shrink: 0;
   overflow-y: auto;
   padding: 20px 24px 28px;
-  border-left: 2px solid #9a9a9a;
+  border-left: 2px solid var(--line-heavy);
 }
 
 .ob__label,
@@ -317,7 +317,7 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #555;
+  color: var(--text-label);
 }
 
 .ob__field {
@@ -335,8 +335,8 @@
 .ob__field > textarea {
   box-sizing: border-box;
   padding: 0 12px;
-  border: 1px solid #8f8f8f;
-  background: #fff;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
   color: var(--ink);
   font: inherit;
   font-size: 13px;
@@ -367,8 +367,8 @@
   min-height: 40px;
   box-sizing: border-box;
   padding: 6px 8px;
-  border: 1px solid #8f8f8f;
-  background: #fff;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
 }
 
 .ob__tags input {
@@ -414,8 +414,8 @@
 .ob__notice {
   margin: 0;
   padding: 10px 12px;
-  border: 1px solid #8f8f8f;
-  background: #e6e6e6;
+  border: 1px solid var(--line-strong);
+  background: var(--hover);
   font-size: 12px;
 }
 
@@ -429,7 +429,7 @@
   width: 84px;
   height: 84px;
   object-fit: cover;
-  border: 1px solid #cfcfcf;
+  border: 1px solid var(--line);
 }
 
 .ob__cover > div {
@@ -449,9 +449,9 @@
   justify-content: center;
   gap: 8px;
   height: 64px;
-  border: 1px dashed #aaa;
-  background: #e0e0e0;
-  color: #777;
+  border: 1px dashed var(--divider);
+  background: var(--placeholder);
+  color: var(--icon);
   font-size: 12px;
   cursor: pointer;
 }
@@ -470,7 +470,7 @@
     width: auto;
     overflow: visible;
     border-left: 0;
-    border-top: 2px solid #9a9a9a;
+    border-top: 2px solid var(--line-heavy);
   }
 
   .ob__picker {

@@ -5,8 +5,8 @@
   box-sizing: border-box;
   aspect-ratio: 3 / 4;
   padding: 10px;
-  border: 1px solid #cfcfcf;
-  background: #e9e9e9;
+  border: 1px solid var(--line);
+  background: var(--panel);
 }
 
 .collage__tile {
@@ -14,7 +14,7 @@
   flex: 1 1 0;
   min-height: 0;
   place-items: center;
-  color: #888;
+  color: var(--icon);
   font-size: 10px;
   text-align: center;
 }
@@ -34,7 +34,7 @@
 .collage--cover {
   display: block;
   padding: 0;
-  background: #e0e0e0;
+  background: var(--placeholder);
 }
 
 .collage--cover img {
@@ -49,7 +49,7 @@
   justify-content: center;
   gap: 6px;
   border-style: dashed;
-  background: #e0e0e0;
-  color: #888;
+  background: var(--placeholder);
+  color: var(--icon);
   font-size: 12px;
 }

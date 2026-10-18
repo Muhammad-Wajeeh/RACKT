@@ -10,11 +10,19 @@ import PageHeader from '../components/PageHeader'
 import { exportClosetCsv } from '../lib/exportCloset'
 import { fetchProfileStats, type ProfileStats } from '../lib/stats'
 import { supabase } from '../lib/supabase'
+import { useTheme, type ThemePreference } from '../lib/theme'
 import { useImageUrls } from '../lib/useImageUrls'
 import './ProfilePage.css'
 
+const THEME_CHOICES: { value: ThemePreference; label: string }[] = [
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+  { value: 'system', label: 'System' },
+]
+
 export default function ProfilePage() {
   const { user } = useAuth()
+  const { preference, setPreference } = useTheme()
   const [stats, setStats] = useState<ProfileStats | null>(null)
   const [editing, setEditing] = useState(false)
   const [exporting, setExporting] = useState(false)
@@ -117,6 +125,21 @@ export default function ProfilePage() {
                 <strong>{s.value}</strong>
                 <span>{s.label}</span>
               </div>
+            ))}
+          </div>
+
+          <h3 className="profile__section">Appearance</h3>
+          <div className="profile__seg" role="group" aria-label="Theme">
+            {THEME_CHOICES.map((c) => (
+              <button
+                key={c.value}
+                type="button"
+                className={preference === c.value ? 'is-on' : undefined}
+                aria-pressed={preference === c.value}
+                onClick={() => setPreference(c.value)}
+              >
+                {c.label}
+              </button>
             ))}
           </div>
 

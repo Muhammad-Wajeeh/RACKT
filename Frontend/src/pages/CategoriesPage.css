@@ -39,7 +39,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid #aaa;
+  border-top: 1px solid var(--divider);
 }
 
 .cat {
@@ -48,7 +48,7 @@
   gap: 12px;
   height: 48px;
   padding-right: 8px;
-  border-bottom: 1px solid #aaa;
+  border-bottom: 1px solid var(--divider);
 }
 
 .cat:hover {
@@ -86,12 +86,12 @@
   height: 30px;
   border: 0;
   background: transparent;
-  color: #777;
+  color: var(--icon);
   cursor: pointer;
 }
 
 .cat__actions button:hover {
-  background: #ddd;
+  background: var(--hover);
   color: var(--ink);
 }
 

@@ -2,10 +2,13 @@ import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import AccountTreeOutlined from '@mui/icons-material/AccountTreeOutlined'
 import CheckroomOutlined from '@mui/icons-material/CheckroomOutlined'
+import DarkModeOutlined from '@mui/icons-material/DarkModeOutlined'
 import DryCleaningOutlined from '@mui/icons-material/DryCleaningOutlined'
 import Inventory2Outlined from '@mui/icons-material/Inventory2Outlined'
+import LightModeOutlined from '@mui/icons-material/LightModeOutlined'
 import PersonOutlineOutlined from '@mui/icons-material/PersonOutlineOutlined'
 import { useClosetCount } from '../layouts/ClosetCount'
+import { useTheme } from '../lib/theme'
 import './Sidebar.css'
 
 
@@ -27,11 +30,27 @@ const NAV_ITEMS: NavItem[] = [
 
 export default function Sidebar() {
   const { count } = useClosetCount()
+  const { resolved, setPreference } = useTheme()
 
   return (
     <aside className="sidebar">
-      <div className="sidebar__logo">
-        RACK<span>T</span>
+      <div className="sidebar__head">
+        <div className="sidebar__logo">
+          RACK<span>T</span>
+        </div>
+        <button
+          type="button"
+          className="sidebar__theme"
+          aria-label={resolved === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={resolved === 'dark' ? 'Light mode' : 'Dark mode'}
+          onClick={() => setPreference(resolved === 'dark' ? 'light' : 'dark')}
+        >
+          {resolved === 'dark' ? (
+            <LightModeOutlined sx={{ fontSize: 18 }} />
+          ) : (
+            <DarkModeOutlined sx={{ fontSize: 18 }} />
+          )}
+        </button>
       </div>
 
       <nav className="sidebar__nav" aria-label="Main">

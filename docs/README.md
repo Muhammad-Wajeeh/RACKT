@@ -17,7 +17,7 @@ and storage "bins", and track cost per wear.
   background removal and colour detection, log wears, search, sort and filter), Categories
   (user-defined, 3 levels), Outfits (stacked-slot builder, tags, notes, cover photo, wear an
   outfit), Bins (storage containers; move pieces in and out, filter and search by bin),
-  Profile (real member-since date, stats, name and picture, CSV export).
+  Profile (real member-since date, stats, name and picture, CSV export), light / dark / system theme.
 - Not built: Forgot password, Google sign-in setup in Supabase, measurements/sizing, account deletion.
 - Wired to Supabase: authentication only (email/password; Google button is coded but the provider is not enabled yet).
 - Database: `pieces` migration written; check `docs/database.md` for whether it has been applied.

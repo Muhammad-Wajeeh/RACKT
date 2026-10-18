@@ -9,7 +9,8 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 48px;
-  background: var(--ink);
+  /* The brand panel stays dark in both themes. */
+  background: #141414;
   color: #f1f1f1;
 }
 
@@ -79,14 +80,14 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #555;
+  color: var(--text-label);
 }
 
 .field input {
   height: 42px;
   padding: 0 12px;
-  border: 1px solid #8f8f8f;
-  background: #fff;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
   color: var(--ink);
   font-size: 13px;
   outline: 0;
@@ -137,7 +138,7 @@
   justify-content: center;
   gap: 10px;
   height: 44px;
-  background: #fff;
+  background: var(--surface);
 }
 
 .auth__divider {
@@ -155,14 +156,14 @@
   content: '';
   flex: 1;
   height: 1px;
-  background: #b5b5b5;
+  background: var(--divider);
 }
 
 .auth__message {
   margin: 0;
   padding: 10px 12px;
-  border: 1px solid #8f8f8f;
-  background: #e6e6e6;
+  border: 1px solid var(--line-strong);
+  background: var(--hover);
   font-size: 12px;
 }
 

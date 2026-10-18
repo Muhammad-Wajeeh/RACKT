@@ -6,17 +6,40 @@ next to the existing ones.
 
 ## Tokens (`Frontend/src/index.css`)
 
-| Variable | Value | Use |
-|---|---|---|
-| `--accent` | `#e8311a` | the only accent colour: primary buttons, active nav, eyebrows, category labels |
-| `--ink` | `#141414` | text |
-| `--muted` | `#8a8a8a` | secondary text, placeholders |
-| `--bg` | `#f1f1f1` | app background |
-| `--panel` | `#e9e9e9` | cards, hover fills |
-| `--line` | `#cfcfcf` | light dividers |
+**Never hard-code a grey or background hex in a stylesheet; use these variables.** Each has a light
+and a dark value (the dark set is `:root[data-theme='dark']` in `index.css`), so using them gives
+dark mode for free.
 
-Common literals: `#9a9a9a` for the 2px structural borders (page header underline, details
-panel edge), `#8f8f8f` for input/button borders, `#e0e0e0` for image placeholders.
+| Variable | Light | Use |
+|---|---|---|
+| `--accent` / `--accent-hover` | `#e8311a` / `#cf2813` | the only accent colour: primary buttons, active nav, eyebrows (same in both themes) |
+| `--ink` | `#141414` | main text |
+| `--muted` | `#8a8a8a` | secondary text, placeholders |
+| `--bg` | `#f1f1f1` | app and dialog background |
+| `--panel` | `#e9e9e9` | cards and raised areas |
+| `--surface` | `#fff` | input and active-chip fills |
+| `--hover` | `#e2e2e2` | hover and notice fills |
+| `--placeholder` | `#e0e0e0` | behind photos and empty image slots (a mid grey in dark mode so black clothing stays visible) |
+| `--line` | `#cfcfcf` | light borders |
+| `--line-strong` | `#8f8f8f` | input and button borders |
+| `--line-heavy` | `#9a9a9a` | the 2px structural lines (page header underline, details panel edge) |
+| `--divider` | `#aaa` | list dividers and dashed borders |
+| `--text-label` | `#555` | small uppercase labels |
+| `--icon` | `#888` | icons and faint text |
+| `--check-a`, `--check-b` | `#d4d4d4`, `#ececec` | checkerboard behind transparent cutouts |
+
+Only two literals are allowed in component CSS: `#fff` for text on the red accent, and the login
+page's brand panel, which stays dark in both themes. A fill that uses `var(--ink)` must put its
+text in `var(--bg)` (not white), so it inverts correctly. For translucent overlays use
+`color-mix(in srgb, var(--bg) N%, transparent)`.
+
+## Dark mode
+
+- `src/lib/theme.ts` stores the preference (`light` / `dark` / `system`, default `system`) in
+  `localStorage`, sets `<html data-theme="light|dark">`, and follows the OS setting live when on
+  `system`. A small inline script in `index.html` sets it before first paint to avoid a flash.
+- `useTheme()` exposes `{ preference, resolved, setPreference }`. It's used by the sidebar's sun/moon
+  quick toggle and the Light / Dark / System buttons on the Profile page.
 
 ## Type
 

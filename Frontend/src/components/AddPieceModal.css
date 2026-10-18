@@ -2,7 +2,7 @@
   width: 440px;
   max-width: calc(100vw - 32px);
   padding: 0;
-  border: 1px solid #8f8f8f;
+  border: 1px solid var(--line-strong);
   background: var(--bg);
   color: var(--ink);
 }
@@ -62,8 +62,8 @@
 .modal__photo {
   position: relative;
   height: 180px;
-  border: 1px dashed #aaa;
-  background: #e0e0e0;
+  border: 1px dashed var(--divider);
+  background: var(--placeholder);
 }
 
 .modal__photo img {
@@ -76,7 +76,8 @@
 /* Checkerboard behind a cutout so the transparency is visible. */
 .modal__photo-img--cutout {
   background:
-    conic-gradient(#d4d4d4 25%, #ececec 0 50%, #d4d4d4 0 75%, #ececec 0) 0 0 / 16px 16px;
+    conic-gradient(var(--check-a) 25%, var(--check-b) 0 50%, var(--check-a) 0 75%, var(--check-b) 0)
+    0 0 / 16px 16px;
 }
 
 .modal__photo-busy {
@@ -84,7 +85,7 @@
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(241, 241, 241, 0.8);
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -92,14 +93,15 @@
 
 .modal__toggle {
   display: flex;
-  border: 1px solid #8f8f8f;
+  border: 1px solid var(--line-strong);
 }
 
 .modal__toggle button {
   height: 26px;
   padding: 0 10px;
   border: 0;
-  background: #f1f1f1;
+  background: var(--bg);
+  color: var(--ink);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -108,7 +110,7 @@
 
 .modal__toggle .is-active {
   background: var(--ink);
-  color: #fff;
+  color: var(--bg);
 }
 
 .modal__photo-empty {
@@ -121,7 +123,7 @@
   gap: 4px;
   border: 0;
   background: transparent;
-  color: #777;
+  color: var(--icon);
   font-size: 13px;
   cursor: pointer;
 }
@@ -145,7 +147,7 @@
 .modal__photo-actions .btn {
   height: 28px;
   padding: 0 10px;
-  background: #f1f1f1;
+  background: var(--bg);
   font-size: 11px;
 }
 
@@ -161,7 +163,7 @@
 .modal__color i {
   width: 14px;
   height: 14px;
-  border: 1px solid #8f8f8f;
+  border: 1px solid var(--line-strong);
   border-radius: 50%;
 }
 
@@ -182,15 +184,15 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #555;
+  color: var(--text-label);
 }
 
 .modal__field input,
 .modal__field select {
   height: 40px;
   padding: 0 12px;
-  border: 1px solid #8f8f8f;
-  background: #fff;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
   color: var(--ink);
   font-size: 13px;
   outline: 0;
