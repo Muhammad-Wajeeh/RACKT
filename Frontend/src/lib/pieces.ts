@@ -30,6 +30,7 @@ export interface PieceFormValues {
 
 export interface NewPiece extends PieceFormValues {
   id: string
+  bin_id?: string | null
   image_path: string | null
   color_hex: string | null
   color_name: string | null

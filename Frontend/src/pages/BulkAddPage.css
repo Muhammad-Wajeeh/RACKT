@@ -1,0 +1,80 @@
+.bulk-actions {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.bulk-actions .btn {
+  text-decoration: none;
+}
+
+.bulk-actions .btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.bulk {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  padding: 20px 28px 0;
+}
+
+.bulk-steps {
+  display: flex;
+  gap: 24px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.bulk-steps li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bulk-steps span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  font-size: 11px;
+}
+
+.bulk-steps .is-active {
+  color: var(--ink);
+}
+
+.bulk-steps .is-active span {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.bulk-steps .is-done span {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.bulk-error {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.bulk-hint {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--muted);
+}

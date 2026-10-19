@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import AddOutlined from '@mui/icons-material/AddOutlined'
+import AddPhotoAlternateOutlined from '@mui/icons-material/AddPhotoAlternateOutlined'
 import ChecklistOutlined from '@mui/icons-material/ChecklistOutlined'
 import CheckroomOutlined from '@mui/icons-material/CheckroomOutlined'
 import CheckOutlined from '@mui/icons-material/CheckOutlined'
@@ -180,6 +182,10 @@ export default function ClosetPage() {
             <ChecklistOutlined sx={{ fontSize: 18 }} />
             {selectMode ? 'DONE' : 'SELECT'}
           </button>
+          <Link to="/closet/bulk" className="btn closet-bulk">
+            <AddPhotoAlternateOutlined sx={{ fontSize: 18 }} />
+            BULK ADD
+          </Link>
           <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
             <AddOutlined sx={{ fontSize: 18 }} />
             ADD PIECE

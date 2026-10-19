@@ -13,7 +13,7 @@ and storage "bins", and track cost per wear.
 
 ## Current status
 
-- Built and wired to Supabase: Closet (add / edit / delete pieces, photos with optional
+- Built and wired to Supabase: Closet (add / edit / delete pieces, bulk add from many photos, photos with optional
   background removal and colour detection, log wears, search, sort and filter), Categories
   (user-defined, 3 levels), Outfits (stacked-slot builder, tags, notes, cover photo, wear an
   outfit), Bins (storage containers; move pieces in and out, filter and search by bin),

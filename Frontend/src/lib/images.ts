@@ -37,67 +37,159 @@ export async function prepareImage(file: File): Promise<PreparedImage> {
   return { blob, ext: 'jpg' }
 }
 
-/**
- * Removes the background in the browser and returns a transparent PNG.
- * Kept behind this one function so the implementation can be swapped (e.g. for a server API).
- * NOTE: @imgly/background-removal is AGPL-licensed; fine for a personal project, but revisit
- * before any commercial release (see docs/architecture.md).
+/*
+ * Background removal.
+ *
+ * The model runs in a Web Worker (src/lib/cutout.worker.ts) so the rest of the page stays usable
+ * while it works. If the worker can't be created or fails, we fall back to running it on the main
+ * thread, which works but freezes the page for a few seconds per photo.
+ *
+ * Kept behind cutOutBackground / preloadCutoutModel so the implementation can be swapped (e.g. for
+ * a server API). NOTE: @imgly/background-removal is AGPL-licensed; fine for a personal project, but
+ * revisit before any commercial release (see docs/architecture.md).
  */
-// Whoever is currently waiting on a cutout gets progress updates, whether the files are
-// being fetched by the background preload or by the cutout itself.
+
+function progressStatus(key: string, current: number, total: number): string {
+  return key.startsWith('fetch') && total > 0
+    ? `Downloading model… ${Math.round((current / total) * 100)}%`
+    : 'Cutting out…'
+}
+
+// ---- Worker path -----------------------------------------------------------------------------
+
+interface PendingCut {
+  resolve: (blob: Blob) => void
+  reject: (error: Error) => void
+  onStatus?: (status: string) => void
+}
+
+let worker: Worker | null | undefined // undefined = not created yet, null = unavailable
+let nextRequestId = 1
+const pending = new Map<number, PendingCut>()
+
+function failAllPending(error: Error) {
+  pending.forEach((p) => p.reject(error))
+  pending.clear()
+}
+
+function getWorker(): Worker | null {
+  if (worker !== undefined) return worker
+  try {
+    const w = new Worker(new URL('./cutout.worker.ts', import.meta.url), { type: 'module' })
+    w.onmessage = (e: MessageEvent) => {
+      const m = e.data as
+        | { type: 'progress'; id: number; key: string; current: number; total: number }
+        | { type: 'done'; id: number; blob: Blob }
+        | { type: 'error'; id: number; message: string }
+      const p = pending.get(m.id)
+      if (!p) return
+      if (m.type === 'progress') {
+        p.onStatus?.(progressStatus(m.key, m.current, m.total))
+      } else {
+        pending.delete(m.id)
+        if (m.type === 'done') p.resolve(m.blob)
+        else p.reject(new Error(m.message))
+      }
+    }
+    w.onerror = () => {
+      // The worker itself broke (e.g. failed to load): stop using it and fall back from now on.
+      failAllPending(new Error('The background-removal worker failed.'))
+      w.terminate()
+      worker = null
+    }
+    worker = w
+  } catch {
+    worker = null
+  }
+  return worker
+}
+
+// ---- Main-thread fallback --------------------------------------------------------------------
+
+// Whoever is currently waiting on a cutout gets progress updates, whether the files are being
+// fetched by the background preload or by the cutout itself.
 let statusListener: ((status: string) => void) | undefined
 
 // preload() and removeBackground() must share the same config, or they fetch different files.
-const CUTOUT_CONFIG = {
+const MAIN_THREAD_CONFIG = {
   output: { format: 'image/png' as const },
-  progress: (key: string, current: number, total: number) => {
-    if (key.startsWith('fetch') && total > 0) {
-      statusListener?.(`Downloading model… ${Math.round((current / total) * 100)}%`)
-    } else {
-      statusListener?.('Cutting out…')
-    }
-  },
+  progress: (key: string, current: number, total: number) =>
+    statusListener?.(progressStatus(key, current, total)),
 }
 
-let preloadPromise: Promise<void> | null = null
+let mainPreloadPromise: Promise<void> | null = null
+
+function preloadOnMainThread() {
+  if (mainPreloadPromise) return
+  mainPreloadPromise = new Promise<void>((resolve) => {
+    // Let the UI paint first; the download starts when the browser is idle.
+    if ('requestIdleCallback' in window) window.requestIdleCallback(() => resolve(), { timeout: 1000 })
+    else setTimeout(resolve, 200)
+  })
+    .then(() => import('@imgly/background-removal'))
+    .then((mod) => mod.preload(MAIN_THREAD_CONFIG))
+    .catch(() => {
+      mainPreloadPromise = null
+    })
+}
+
+async function cutOutOnMainThread(
+  image: PreparedImage,
+  onStatus?: (status: string) => void,
+): Promise<PreparedImage> {
+  statusListener = onStatus
+  try {
+    // If a preload is still in flight, wait for it (the caller shows the loading state).
+    if (mainPreloadPromise) {
+      onStatus?.('Downloading model…')
+      await mainPreloadPromise
+    }
+    // Lazy-loaded so the model code stays out of the main bundle.
+    const { removeBackground } = await import('@imgly/background-removal')
+    onStatus?.('Cutting out…')
+    const blob = await removeBackground(image.blob, MAIN_THREAD_CONFIG)
+    return { blob, ext: 'png' }
+  } finally {
+    statusListener = undefined
+  }
+}
+
+// ---- Public API ------------------------------------------------------------------------------
+
+let preloadRequested = false
 
 /**
  * Starts downloading the cutout model in the background. Safe to call repeatedly and never
  * throws: if it fails, the cutout itself just downloads what it needs when requested.
  */
 export function preloadCutoutModel(): void {
-  if (preloadPromise) return
-  preloadPromise = new Promise<void>((resolve) => {
-    // Let the UI paint first; the download starts when the browser is idle.
-    if ('requestIdleCallback' in window) window.requestIdleCallback(() => resolve(), { timeout: 1000 })
-    else setTimeout(resolve, 200)
-  })
-    .then(() => import('@imgly/background-removal'))
-    .then((mod) => mod.preload(CUTOUT_CONFIG))
-    .catch(() => {
-      preloadPromise = null
-    })
+  if (preloadRequested) return
+  preloadRequested = true
+  const w = getWorker()
+  if (w) w.postMessage({ type: 'preload' })
+  else preloadOnMainThread()
 }
 
+/** Removes the background and returns a transparent PNG. */
 export async function cutOutBackground(
   image: PreparedImage,
   onStatus?: (status: string) => void,
 ): Promise<PreparedImage> {
-  statusListener = onStatus
-  try {
-    // If the preload is still in flight, wait for it (the caller shows the loading state).
-    if (preloadPromise) {
-      onStatus?.('Downloading model…')
-      await preloadPromise
+  const w = getWorker()
+  if (w) {
+    try {
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        const id = nextRequestId++
+        pending.set(id, { resolve, reject, onStatus })
+        onStatus?.('Cutting out…')
+        w.postMessage({ type: 'cut', id, blob: image.blob })
+      })
+      return { blob, ext: 'png' }
+    } catch (err) {
+      console.warn('Background removal in a worker failed; retrying on the main thread.', err)
     }
-    // Lazy-loaded so the model code stays out of the main bundle.
-    const { removeBackground } = await import('@imgly/background-removal')
-    onStatus?.('Cutting out…')
-    const blob = await removeBackground(image.blob, CUTOUT_CONFIG)
-    return { blob, ext: 'png' }
-  } finally {
-    statusListener = undefined
   }
+  return cutOutOnMainThread(image, onStatus)
 }
 
 /** Uploads to "<userId>/<pieceId>.<ext>" and returns the storage path. */

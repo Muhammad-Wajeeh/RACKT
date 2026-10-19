@@ -42,6 +42,7 @@ components are used.
 | `/login`, `/signup` | `AuthPage` (`mode` prop) | guests only (`GuestOnly`; signed-in users go to `/closet`) |
 | `/` | redirect to `/closet` | signed in |
 | `/closet` | `ClosetPage`. Clicking a card selects it and shows `PieceDetails` in the right-hand panel (Delete works, with a confirm dialog; LOG A WEAR works and adds 1 to `wear_count`, a plain counter with no history; EDIT PIECE works for name, brand, category, price, wear count and colour (picked from the named colours), but not the photo; MOVE TO BIN works (single piece, or in bulk via the SELECT mode). The add and edit modals share `PieceFields` and `parsePieceForm`.). Selection is local state, not a route. The search box, category chips and the top-right Sort & filter panel (`SortFilterMenu`; logic in `src/lib/closetView.ts`) all work client-side on the loaded pieces: search matches name, brand, category path and colour name (every typed word must match); the panel sorts (newest/oldest, price, colour lightness, wear count, cost per wear; pieces missing the value sort last) and filters by colour, price range, times worn and brand (AND across groups, OR within colours and within brands). | signed in |
+| `/closet/bulk` | `BulkAddPage`: add many pieces at once. Three steps: upload photos (max 40, one piece per photo), choose which photos get background removal, then fill in details per piece (name, brand, category, bin, price, times worn, colour) with Next / Previous, ticking several tiles to apply a category, brand or bin to all of them, and removing photos from the batch. Cutouts run **one at a time in the background** (`cutOutBackground` queue in the page) while you work, each with a status badge; a piece can also be cut out later from its editor. **SAVE ALL** stays disabled until every piece has a name and no cutout is still pending; it uploads and inserts pieces one by one, and any that fail stay on screen with their error to fix and retry. Components live in `src/components/bulk/`, state helpers in `src/lib/bulkItems.ts` | signed in |
 | `/categories` | `CategoriesPage`: add / rename / delete types and subtypes (max 3 levels) | signed in |
 | `/profile` | `ProfilePage`: "Member since" from the account's real creation date (`user.created_at`), name and picture (stored in the auth user's metadata: `display_name`, `avatar_path` in the `piece-images` bucket; Google sign-ins also supply `avatar_url`), live stats (pieces, looks, average cost per wear = total spent on worn priced pieces / total wears), Edit profile, Export closet as CSV, Sign out | signed in |
 | `/bins` | `BinsPage`: bins (name, notes, optional photo) with a details panel to add pieces, take them out, edit and delete; a piece is in at most one bin | signed in |
@@ -82,8 +83,12 @@ its pieces list changes, so adds and deletes show up immediately.
 
 ## Background removal
 
-`cutOutBackground()` in `src/lib/images.ts` runs `@imgly/background-removal` in the browser
-(lazy-loaded; the model downloads on first use from IMG.LY's CDN) and returns a transparent PNG.
+`cutOutBackground()` in `src/lib/images.ts` runs `@imgly/background-removal` in the browser (the
+model downloads on first use from IMG.LY's CDN) and returns a transparent PNG. It runs inside a
+**Web Worker** (`src/lib/cutout.worker.ts`) so the rest of the page stays usable while it works (the
+package itself only moves off the main thread on WebGPU, so we do it ourselves). If the worker can't
+start or fails, it falls back to the main thread, which works but freezes the page for a few seconds
+per photo. `vite.config.ts` sets `worker.format: 'es'` because the worker uses dynamic imports.
 It is opt-in per photo in the Add Piece modal. `preloadCutoutModel()` starts the model
 download (when the browser is idle) as soon as the modal opens; a cutout requested before it
 finishes just waits for it and shows the loading state. `preload()` and `removeBackground()` must

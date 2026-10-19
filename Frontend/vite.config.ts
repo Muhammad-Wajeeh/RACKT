@@ -13,4 +13,8 @@ export default defineConfig({
   optimizeDeps: {
     include: ['@imgly/background-removal'],
   },
+  // The background-removal worker uses dynamic imports, which need ES module workers.
+  worker: {
+    format: 'es',
+  },
 })

@@ -26,6 +26,10 @@
   margin-left: auto;
 }
 
+.closet-bulk {
+  text-decoration: none;
+}
+
 .closet-body {
   flex: 1;
   display: flex;

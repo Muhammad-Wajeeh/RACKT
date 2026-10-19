@@ -3,6 +3,7 @@ import { AuthProvider } from './auth/AuthContext'
 import { GuestOnly, RequireAuth } from './auth/RouteGuards'
 import AppLayout from './layouts/AppLayout'
 import AuthPage from './pages/AuthPage'
+import BulkAddPage from './pages/BulkAddPage'
 import BinsPage from './pages/BinsPage'
 import CategoriesPage from './pages/CategoriesPage'
 import ClosetPage from './pages/ClosetPage'
@@ -23,6 +24,7 @@ export default function App() {
           <Route element={<AppLayout />}>
             <Route index element={<Navigate to="/closet" replace />} />
             <Route path="closet" element={<ClosetPage />} />
+            <Route path="closet/bulk" element={<BulkAddPage />} />
             <Route path="categories" element={<CategoriesPage />} />
             <Route path="outfits" element={<OutfitsPage />} />
             <Route path="outfits/new" element={<OutfitBuilderPage />} />
