@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import type { Category } from '../lib/categories'
+import type { DetectedColor } from '../lib/colors'
 import { parsePieceForm, updatePiece, type Piece } from '../lib/pieces'
+import ColorPicker from './ColorPicker'
 import PieceFields from './PieceFields'
 import './AddPieceModal.css' // shared modal styles
 
@@ -18,6 +20,10 @@ export default function EditPieceModal({
   onSaved,
 }: EditPieceModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  // Start from the saved colour; picking a swatch replaces it, "None" clears it.
+  const [color, setColor] = useState<DetectedColor | null>(
+    piece.color_hex && piece.color_name ? { hex: piece.color_hex, name: piece.color_name } : null,
+  )
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -40,7 +46,13 @@ export default function EditPieceModal({
 
     setBusy(true)
     try {
-      onSaved(await updatePiece(piece.id, values))
+      onSaved(
+        await updatePiece(piece.id, {
+          ...values,
+          color_hex: color?.hex ?? null,
+          color_name: color?.name ?? null,
+        }),
+      )
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save your changes.')
@@ -79,6 +91,8 @@ export default function EditPieceModal({
         </header>
 
         <PieceFields piece={piece} categories={categories} />
+
+        <ColorPicker value={color} onChange={setColor} />
 
         {error && (
           <p className="modal__error" role="alert">

@@ -33,6 +33,12 @@ const NAMED_COLORS: Record<string, string> = {
   Purple: '#6a3d9a',
 }
 
+/** The colours you can pick by hand: every name we can detect, with its reference colour. */
+export const COLOR_CHOICES: DetectedColor[] = Object.entries(NAMED_COLORS).map(([name, hex]) => ({
+  name,
+  hex,
+}))
+
 type Lab = [number, number, number]
 
 function hexToLab(hex: string): Lab {

@@ -70,7 +70,10 @@ export async function fetchPieceCount(): Promise<number> {
 }
 
 /** Saves edited fields and returns the updated piece (with a recalculated `cost_per_wear`). */
-export async function updatePiece(id: string, values: PieceFormValues): Promise<Piece> {
+export async function updatePiece(
+  id: string,
+  values: PieceFormValues & { color_hex: string | null; color_name: string | null },
+): Promise<Piece> {
   const { data, error } = await supabase
     .from('pieces')
     .update(values)

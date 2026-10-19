@@ -94,10 +94,13 @@ Closet items. Columns: `id`, `user_id`, `name`, `brand`, `category_id`, `price`,
 `image_path`, `created_at`, `updated_at`, `cost_per_wear` (generated: price / wear_count,
 null until worn).
 
-`color_hex` / `color_name` (migration `20261018000000_add_piece_color.sql`): the auto-detected
-main colour. **Only set when the piece was saved with a background-removed photo**; measured
-on the cutout's opaque pixels with Color Thief (`src/lib/colors.ts`), then snapped to a small
-clothing-friendly name list in CIELAB. There is no manual colour choice yet.
+`color_hex` / `color_name` (migration `20261018000000_add_piece_color.sql`): the piece's main
+colour. It is **auto-detected only from a background-removed photo** (measured on the cutout's
+opaque pixels with Color Thief in `src/lib/colors.ts`, then snapped to a small clothing-friendly name
+list in CIELAB). It can also be **set or changed by hand** in the Add and Edit dialogs
+(`ColorPicker`) from that same name list (`COLOR_CHOICES`), or cleared; a manual choice stores the
+name's reference hex and is never overwritten by a later auto-detection. Filters and search use
+`color_name`, so manual and detected colours behave the same.
 
 `category_id` (nullable FK to `categories`, `on delete set null`) replaced the old fixed `category`
 text column in `20261018180000_create_categories.sql`. Null means "Uncategorized". A trigger

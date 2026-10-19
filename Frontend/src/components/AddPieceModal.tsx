@@ -12,6 +12,7 @@ import {
 import type { Category } from '../lib/categories'
 import { detectColor, type DetectedColor } from '../lib/colors'
 import { createPiece, parsePieceForm, type Piece } from '../lib/pieces'
+import ColorPicker from './ColorPicker'
 import PieceFields from './PieceFields'
 import './AddPieceModal.css'
 
@@ -37,7 +38,12 @@ export default function AddPieceModal({ categories, onClose, onCreated }: AddPie
   const [original, setOriginal] = useState<Photo | null>(null)
   const [cutout, setCutout] = useState<Photo | null>(null)
   const [useCutout, setUseCutout] = useState(false)
-  const [color, setColor] = useState<DetectedColor | null>(null)
+  // The chosen colour: auto-detected from a cutout until you pick one yourself (`manual`).
+  const [colorState, setColorState] = useState<{ color: DetectedColor | null; manual: boolean }>({
+    color: null,
+    manual: false,
+  })
+  const color = colorState.color
   const [cutStatus, setCutStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -77,7 +83,7 @@ export default function AddPieceModal({ categories, onClose, onCreated }: AddPie
       setOriginal(toPhoto(image))
       setCutout(null)
       setUseCutout(false)
-      setColor(null)
+      setColorState((prev) => (prev.manual ? prev : { color: null, manual: false }))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load that image.')
     }
@@ -87,7 +93,7 @@ export default function AddPieceModal({ categories, onClose, onCreated }: AddPie
     setOriginal(null)
     setCutout(null)
     setUseCutout(false)
-    setColor(null)
+    setColorState((prev) => (prev.manual ? prev : { color: null, manual: false }))
   }
 
   async function handleCutout() {
@@ -98,8 +104,9 @@ export default function AddPieceModal({ categories, onClose, onCreated }: AddPie
       const image = await cutOutBackground(original.image, setCutStatus)
       setCutout(toPhoto(image))
       setUseCutout(true)
-      // Colour detection is best-effort; a failure just means no colour is saved.
-      setColor(await detectColor(image.blob).catch(() => null))
+      // Colour detection is best-effort, and never overrides a colour you picked yourself.
+      const detected = await detectColor(image.blob).catch(() => null)
+      setColorState((prev) => (prev.manual ? prev : { color: detected, manual: false }))
     } catch (err) {
       setError(
         err instanceof Error ? `Background removal failed: ${err.message}` : 'Background removal failed.',
@@ -126,13 +133,11 @@ export default function AddPieceModal({ categories, onClose, onCreated }: AddPie
     let imagePath: string | null = null
     try {
       if (shown) imagePath = await uploadPieceImage(user.id, id, shown.image)
-      // Only cutouts get an auto-detected colour.
-      const savedColor = useCutout && cutout ? color : null
       const piece = await createPiece({
         id,
         image_path: imagePath,
-        color_hex: savedColor?.hex ?? null,
-        color_name: savedColor?.name ?? null,
+        color_hex: color?.hex ?? null,
+        color_name: color?.name ?? null,
         ...values,
       })
       onCreated(piece)
@@ -230,14 +235,13 @@ export default function AddPieceModal({ categories, onClose, onCreated }: AddPie
           )}
         </div>
 
-        {useCutout && cutout && color && (
-          <p className="modal__color">
-            <i style={{ background: color.hex }} aria-hidden="true" />
-            Detected color: <strong>{color.name}</strong>
-          </p>
-        )}
-
         <PieceFields categories={categories} />
+
+        <ColorPicker
+          value={color}
+          onChange={(next) => setColorState({ color: next, manual: true })}
+          hint={color && !colorState.manual ? 'detected from the cutout, change it if it looks wrong' : undefined}
+        />
 
         {error && (
           <p className="modal__error" role="alert">
