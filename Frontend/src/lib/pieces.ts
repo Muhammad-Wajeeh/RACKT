@@ -109,6 +109,26 @@ export async function deletePiece(piece: Piece): Promise<void> {
   if (piece.image_path) await removePieceImage(piece.image_path).catch(() => {})
 }
 
+/** Deletes several pieces in one query, then their photos. Throws if any of them wasn't deleted. */
+export async function deletePieces(pieces: Piece[]): Promise<void> {
+  if (pieces.length === 0) return
+  const { data, error } = await supabase
+    .from('pieces')
+    .delete()
+    .in(
+      'id',
+      pieces.map((p) => p.id),
+    )
+    .select('id')
+  if (error) throw error
+  if (!data || data.length !== pieces.length) {
+    throw new Error('Some pieces could not be deleted. Reload and try again.')
+  }
+  const paths = pieces.map((p) => p.image_path).filter((path): path is string => !!path)
+  // Best effort: a failure only leaves orphaned files, not broken pieces.
+  await Promise.all(paths.map((path) => removePieceImage(path).catch(() => {})))
+}
+
 // user_id is filled in by the database (default auth.uid()).
 export async function createPiece(piece: NewPiece): Promise<Piece> {
   const { data, error } = await supabase.from('pieces').insert(piece).select().single()

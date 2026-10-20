@@ -142,6 +142,11 @@
   font-size: 11px;
 }
 
+.closet-selectbar .closet-selectbar__delete {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .closet-selectbar .btn:disabled {
   opacity: 0.5;
   cursor: default;

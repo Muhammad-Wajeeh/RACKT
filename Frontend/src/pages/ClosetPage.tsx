@@ -5,11 +5,13 @@ import AddPhotoAlternateOutlined from '@mui/icons-material/AddPhotoAlternateOutl
 import ChecklistOutlined from '@mui/icons-material/ChecklistOutlined'
 import CheckroomOutlined from '@mui/icons-material/CheckroomOutlined'
 import CheckOutlined from '@mui/icons-material/CheckOutlined'
+import DeleteOutlineOutlined from '@mui/icons-material/DeleteOutlineOutlined'
 import ImageOutlined from '@mui/icons-material/ImageOutlined'
 import Inventory2Outlined from '@mui/icons-material/Inventory2Outlined'
 import SearchOutlined from '@mui/icons-material/SearchOutlined'
 import AddPieceModal from '../components/AddPieceModal'
 import BinPickerModal from '../components/BinPickerModal'
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal'
 import PageHeader from '../components/PageHeader'
 import PieceDetails from '../components/PieceDetails'
 import SortFilterMenu from '../components/SortFilterMenu'
@@ -33,7 +35,7 @@ import {
   type Filters,
   type SortKey,
 } from '../lib/closetView'
-import { deletePiece, fetchPieces, logWear, type Piece } from '../lib/pieces'
+import { deletePiece, deletePieces, fetchPieces, logWear, type Piece } from '../lib/pieces'
 import { useImageUrls } from '../lib/useImageUrls'
 import { useClosetCount } from '../layouts/ClosetCount'
 import './ClosetPage.css'
@@ -63,6 +65,7 @@ export default function ClosetPage() {
   const [selectMode, setSelectMode] = useState(false)
   const [checkedIds, setCheckedIds] = useState<string[]>([])
   const [bulkMoving, setBulkMoving] = useState(false)
+  const [bulkDeleting, setBulkDeleting] = useState(false)
 
   useEffect(() => {
     Promise.all([fetchPieces(), fetchCategories(), fetchBins()])
@@ -258,6 +261,15 @@ export default function ClosetPage() {
                 <Inventory2Outlined sx={{ fontSize: 16 }} />
                 MOVE TO BIN
               </button>
+              <button
+                type="button"
+                className="btn closet-selectbar__delete"
+                disabled={checkedIds.length === 0}
+                onClick={() => setBulkDeleting(true)}
+              >
+                <DeleteOutlineOutlined sx={{ fontSize: 16 }} />
+                DELETE
+              </button>
             </div>
           )}
 
@@ -320,7 +332,7 @@ export default function ClosetPage() {
                   </div>
                   <div className="piece__info">
                     <span className="piece__category">
-                      {label}
+                      {categoryPath(categories, p.category_id)}
                       {p.color_hex && (
                         <i
                           className="swatch"
@@ -383,6 +395,42 @@ export default function ClosetPage() {
           onClose={() => setBulkMoving(false)}
           onSubmit={async (binId) => {
             applyMoved(await movePiecesToBin(binId, checkedIds))
+            leaveSelectMode()
+          }}
+        />
+      )}
+
+      {bulkDeleting && (
+        <ConfirmDeleteModal
+          title={`Delete ${checkedIds.length} ${checkedIds.length === 1 ? 'piece' : 'pieces'}?`}
+          subject={
+            <div className="confirm__meta">
+              <strong>
+                {checkedIds.length} {checkedIds.length === 1 ? 'piece' : 'pieces'} selected
+              </strong>
+              <span>
+                {pieces
+                  .filter((p) => checkedIds.includes(p.id))
+                  .slice(0, 3)
+                  .map((p) => p.name)
+                  .join(', ')}
+                {checkedIds.length > 3 ? ` and ${checkedIds.length - 3} more` : ''}
+              </span>
+            </div>
+          }
+          message={
+            <>
+              They will be permanently removed from your closet, along with their photos.{' '}
+              <strong>This can't be undone.</strong>
+            </>
+          }
+          confirmLabel={`DELETE ${checkedIds.length}`}
+          onCancel={() => setBulkDeleting(false)}
+          onConfirm={async () => {
+            await deletePieces(pieces.filter((p) => checkedIds.includes(p.id)))
+            setPieces((prev) => prev.filter((p) => !checkedIds.includes(p.id)))
+            if (selectedId && checkedIds.includes(selectedId)) setSelectedId(null)
+            setBulkDeleting(false)
             leaveSelectMode()
           }}
         />
