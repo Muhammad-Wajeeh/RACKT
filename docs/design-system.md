@@ -62,7 +62,11 @@ Font is **Archivo** (loaded from Google Fonts in `index.html`), weights 400–80
 - **Buttons:** `.btn` (outlined), `.btn--primary` (solid red), `.btn--icon` (square icon-only).
 - **Two-pane pages** (Closet, Bins): scrollable main area plus a 378px right "details" panel
   with a 2px left border. It shows an empty-state hint until something is selected, and is
-  hidden below 1100px wide.
+  hidden below 1100px wide; once something is selected it becomes a full-screen overlay there.
+- **Mobile (≤768px):** the sidebar becomes a bottom tab bar (logo, theme switch and footer hidden; the
+  theme switch is on Profile), `PageHeader` wraps to several rows, page padding drops to 16px, and
+  inputs are forced to 16px so iOS doesn't zoom on focus. Mobile rules sit in an `@media
+  (max-width: 768px)` block at the bottom of each stylesheet.
 - **Empty states:** a 32px outline icon above one line of muted text.
 - **Chips:** 25px tall, 1px red border, red text; the active chip is white with dark text.
 - **Icons:** Material **Outlined** icons from `@mui/icons-material` (the mockups use the Outlined

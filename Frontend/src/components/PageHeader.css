@@ -33,3 +33,18 @@
   padding: 28px;
   color: var(--muted);
 }
+
+/* Phones: the title and the page's controls wrap onto separate rows. */
+@media (max-width: 768px) {
+  .page-header {
+    flex-wrap: wrap;
+    gap: 10px 12px;
+    height: auto;
+    min-height: 56px;
+    padding: 10px 16px;
+  }
+
+  .page-header h1 {
+    font-size: 19px;
+  }
+}

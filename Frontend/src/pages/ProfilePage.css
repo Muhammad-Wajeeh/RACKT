@@ -195,3 +195,13 @@
   justify-content: flex-start;
   height: 36px;
 }
+
+@media (max-width: 768px) {
+  .profile-scroll {
+    padding: 20px 16px;
+  }
+
+  .profile-edit {
+    margin-left: 0;
+  }
+}

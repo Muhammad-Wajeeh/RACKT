@@ -445,6 +445,37 @@
   color: var(--accent);
 }
 
+@media (max-width: 768px) {
+  .bk-details {
+    margin: 0 -16px;
+  }
+
+  .bk-details__list {
+    padding: 0 16px 20px;
+  }
+
+  .bk-details__editor {
+    padding: 20px 16px 24px;
+  }
+
+  .bk-bar {
+    flex-wrap: wrap;
+  }
+
+  .bk-tiles {
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 10px;
+  }
+
+  .bk-thumbs--large {
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  }
+
+  .bk-drop {
+    padding: 32px 16px;
+  }
+}
+
 @media (max-width: 1000px) {
   .bk-details {
     flex-direction: column;

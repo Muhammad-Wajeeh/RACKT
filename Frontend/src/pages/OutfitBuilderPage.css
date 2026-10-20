@@ -478,3 +478,39 @@
     overflow: visible;
   }
 }
+
+@media (max-width: 768px) {
+  .ob-actions {
+    flex-wrap: wrap;
+    margin-left: 0;
+  }
+
+  .ob-status {
+    margin: 16px;
+  }
+
+  .ob__picker {
+    padding: 16px;
+  }
+
+  .ob__side {
+    padding: 16px;
+  }
+
+  .ob__bar {
+    flex-wrap: wrap;
+  }
+
+  .ob__select {
+    width: 100%;
+  }
+
+  .ob__grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+
+  .slot__thumb {
+    width: 64px;
+    height: 64px;
+  }
+}

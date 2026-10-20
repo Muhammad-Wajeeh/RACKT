@@ -96,3 +96,44 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
+
+/* Phones: a bottom tab bar (the theme switch lives on the Profile page there). */
+@media (max-width: 768px) {
+  .sidebar {
+    order: 2;
+    width: 100%;
+    height: auto;
+    padding: 0 0 env(safe-area-inset-bottom);
+    border-right: 0;
+    border-top: 2px solid var(--line-heavy);
+  }
+
+  .sidebar__head,
+  .sidebar__footer {
+    display: none;
+  }
+
+  .sidebar__nav {
+    flex-direction: row;
+    gap: 0;
+  }
+
+  .sidebar__item {
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    height: 56px;
+    padding: 0 2px;
+    border-left: 0;
+    border-top: 2px solid transparent;
+    font-size: 9.5px;
+    letter-spacing: 0.04em;
+  }
+
+  .sidebar__item--active {
+    border-left-color: transparent;
+    border-top-color: var(--accent);
+  }
+}

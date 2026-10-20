@@ -267,4 +267,44 @@
   .closet-details {
     display: none;
   }
+
+  /* No room for a side panel: an opened piece takes over the screen (its X closes it). */
+  .closet-details--filled {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    width: auto;
+    border-left: 0;
+    background: var(--bg);
+  }
+}
+
+@media (max-width: 768px) {
+  .closet-search {
+    flex: 1 1 100%;
+  }
+
+  .closet-actions {
+    flex-wrap: wrap;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .closet-main {
+    padding: 16px;
+  }
+
+  .closet-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .closet-selectbar {
+    flex-wrap: wrap;
+  }
+
+  .closet-details--filled {
+    padding: 16px 16px 24px;
+  }
 }

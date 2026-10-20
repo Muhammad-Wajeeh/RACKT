@@ -10,3 +10,17 @@
   display: flex;
   flex-direction: column;
 }
+
+/* Phones: the sidebar becomes a tab bar along the bottom. */
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .app-layout__main {
+    min-height: 0;
+    overflow: hidden;
+  }
+}

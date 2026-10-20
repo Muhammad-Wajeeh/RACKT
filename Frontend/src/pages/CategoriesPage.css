@@ -98,3 +98,14 @@
 .cat__actions .cat__delete:hover {
   color: var(--accent);
 }
+
+@media (max-width: 768px) {
+  .cats-actions {
+    flex-wrap: wrap;
+    margin-left: 0;
+  }
+
+  .cats-scroll {
+    padding: 16px;
+  }
+}

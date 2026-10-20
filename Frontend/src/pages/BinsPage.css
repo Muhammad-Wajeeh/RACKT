@@ -270,4 +270,34 @@
   .bins-details {
     display: none;
   }
+
+  /* No room for a side panel: an opened bin takes over the screen (its X closes it). */
+  .bins-details--filled {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    width: auto;
+    border-left: 0;
+    background: var(--bg);
+  }
+}
+
+@media (max-width: 768px) {
+  .bins-new {
+    margin-left: 0;
+  }
+
+  .bins-main {
+    padding: 16px;
+  }
+
+  .bins-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .bins-details--filled {
+    padding: 16px 16px 24px;
+  }
 }

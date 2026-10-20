@@ -16,6 +16,7 @@
 - **Backend folder is gone.** There used to be an Express `Backend/`. It was deleted on purpose;
   don't recreate it.
 - **Browser preview width.** The in-app preview pane can be narrow, which hides the 378px
-  details panels (they hide under 1100px). Resize the viewport to check desktop layout.
+  details panels (below 1100px they hide until a piece or bin is selected, then go full screen).
+  Resize the viewport to check desktop layout.
 - **Mockup typos.** The Closet mockup shows a "Shoes" category on cards but the filter chip says
   "Footwear". The data model uses `Footwear`.

@@ -88,3 +88,14 @@
   font-size: 11px;
   color: var(--muted);
 }
+
+@media (max-width: 768px) {
+  .outfits-scroll {
+    padding: 16px;
+  }
+
+  .looks {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+}

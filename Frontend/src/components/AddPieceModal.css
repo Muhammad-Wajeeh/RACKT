@@ -208,3 +208,17 @@
   opacity: 0.6;
   cursor: default;
 }
+
+@media (max-width: 768px) {
+  .modal {
+    max-height: calc(100dvh - 32px);
+  }
+
+  .modal__form {
+    padding: 18px;
+  }
+
+  .modal__row {
+    flex-wrap: wrap;
+  }
+}
